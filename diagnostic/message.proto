@@ -1,0 +1,6 @@
+package diagnostic;
+
+message Message {
+	required string DiagID = 1;
+	required bytes Data = 2;
+}

@@ -33,14 +33,8 @@ func init() {
 
 func initCmd(c *commander.Command, inp []string) error {
 	configpath, err := getConfigDir(c.Parent)
-	if err != nil {
+	if err = os.MkdirAll(configpath, 0775); err != nil {
 		return err
-	}
-	if configpath == "" {
-		configpath, err = u.TildeExpansion("~/.go-ipfs")
-		if err != nil {
-			return err
-		}
 	}
 
 	u.POut("initializing ipfs node at %s\n", configpath)
@@ -49,11 +43,12 @@ func initCmd(c *commander.Command, inp []string) error {
 		return errors.New("Couldn't get home directory path")
 	}
 
-	fi, err := os.Lstat(filename)
 	force, ok := c.Flag.Lookup("f").Value.Get().(bool)
 	if !ok {
 		return errors.New("failed to parse force flag")
 	}
+
+	fi, err := os.Lstat(filename)
 	if fi != nil || (err != nil && !os.IsNotExist(err)) {
 		if !force {
 			return errors.New("ipfs configuration file already exists!\nReinitializing would overwrite your keys.\n(use -f to force overwrite)")
@@ -62,7 +57,7 @@ func initCmd(c *commander.Command, inp []string) error {
 	cfg := new(config.Config)
 
 	cfg.Datastore = config.Datastore{}
-	dspath, err := u.TildeExpansion("~/.go-ipfs/datastore")
+	dspath, err := u.TildeExpansion(configpath + "/datastore")
 	if err != nil {
 		return err
 	}
@@ -110,7 +105,7 @@ func initCmd(c *commander.Command, inp []string) error {
 		},
 	}
 
-	path, err := u.TildeExpansion(config.DefaultConfigFilePath)
+	path, err := u.TildeExpansion(filename)
 	if err != nil {
 		return err
 	}

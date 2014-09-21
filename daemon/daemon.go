@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"time"
 
 	core "github.com/jbenet/go-ipfs/core"
 	"github.com/jbenet/go-ipfs/core/commands"
@@ -81,7 +82,16 @@ func (dl *DaemonListener) handleConnection(conn net.Conn) {
 		err = commands.Ls(dl.node, command.Args, command.Opts, conn)
 	case "pin":
 		err = commands.Pin(dl.node, command.Args, command.Opts, conn)
+	case "diag":
+		info, err := dl.node.Diagnostics.GetDiagnostic(time.Second * 20)
+		if err != nil {
+			fmt.Fprintln(conn, err)
+			return
+		}
+		enc := json.NewEncoder(conn)
+		err = enc.Encode(info)
 	default:
+		fmt.Printf("Unrecognized: %v\n", command)
 		err = fmt.Errorf("Invalid Command: '%s'", command.Command)
 	}
 	if err != nil {

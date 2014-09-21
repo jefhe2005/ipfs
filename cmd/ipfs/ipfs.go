@@ -86,12 +86,14 @@ func localNode(confdir string, online bool) (*core.IpfsNode, error) {
 // the empty string
 func getConfigDir(c *commander.Command) (string, error) {
 	conf := c.Flag.Lookup("c").Value.Get()
-	if conf == nil {
-		return "", nil
+	if conf != nil {
+		confStr, ok := conf.(string)
+		if !ok {
+			return "", errors.New("failed to retrieve config flag value.")
+		}
+
+		return confStr, nil
 	}
-	confStr, ok := conf.(string)
-	if !ok {
-		return "", errors.New("failed to retrieve config flag value.")
-	}
-	return confStr, nil
+
+	return u.TildeExpansion(config.DefaultPathRoot)
 }

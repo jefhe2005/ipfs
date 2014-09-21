@@ -3,6 +3,8 @@ package merkledag
 import (
 	"fmt"
 
+	"github.com/op/go-logging"
+
 	"github.com/jbenet/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
 
 	mh "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multihash"
@@ -10,6 +12,8 @@ import (
 	bserv "github.com/jbenet/go-ipfs/blockservice"
 	u "github.com/jbenet/go-ipfs/util"
 )
+
+var log = logging.MustGetLogger("merkledag")
 
 // NodeMap maps u.Keys to Nodes.
 // We cannot use []byte/Multihash for keys :(
@@ -105,7 +109,7 @@ type DAGService struct {
 // Add adds a node to the DAGService, storing the block in the BlockService
 func (n *DAGService) Add(nd *Node) (u.Key, error) {
 	k, _ := nd.Key()
-	u.DOut("DagService Add [%s]\n", k.Pretty())
+	log.Info("Add [%s]", k.Pretty())
 	if n == nil {
 		return "", fmt.Errorf("DAGService is nil")
 	}
@@ -130,6 +134,7 @@ func (n *DAGService) AddRecursive(nd *Node) error {
 	}
 
 	for _, link := range nd.Links {
+		log.Debug("Adding link: %s", link.Name)
 		if link.Node == nil {
 			panic("Why does this node have a nil link?\n")
 		}

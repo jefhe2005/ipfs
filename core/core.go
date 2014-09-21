@@ -13,6 +13,7 @@ import (
 	bserv "github.com/jbenet/go-ipfs/blockservice"
 	config "github.com/jbenet/go-ipfs/config"
 	ci "github.com/jbenet/go-ipfs/crypto"
+	diag "github.com/jbenet/go-ipfs/diagnostic"
 	exchange "github.com/jbenet/go-ipfs/exchange"
 	bitswap "github.com/jbenet/go-ipfs/exchange/bitswap"
 	merkledag "github.com/jbenet/go-ipfs/merkledag"
@@ -59,6 +60,9 @@ type IpfsNode struct {
 	// the path resolution system
 	Resolver *path.Resolver
 
+	// the diagnostics engine
+	Diagnostics *diag.Diagnostics
+
 	// the name system, resolves paths to hashes
 	// Namesys *namesys.Namesys
 }
@@ -90,6 +94,7 @@ func NewIpfsNode(cfg *config.Config, online bool) (*IpfsNode, error) {
 		// TODO: refactor so we can use IpfsRouting interface instead of being DHT-specific
 		route           *dht.IpfsDHT
 		exchangeSession exchange.Interface
+		diagnostics     *diag.Diagnostics
 	)
 
 	if online {
@@ -99,6 +104,10 @@ func NewIpfsNode(cfg *config.Config, online bool) (*IpfsNode, error) {
 		dhtService := netservice.NewService(nil)      // nil handler for now, need to patch it
 		exchangeService := netservice.NewService(nil) // nil handler for now, need to patch it
 
+		diagService := netservice.NewService(nil)
+		diagnostics = diag.NewDiagnostics(local, net, diagService)
+		diagService.Handler = diagnostics
+
 		if err := dhtService.Start(ctx); err != nil {
 			return nil, err
 		}
@@ -107,8 +116,9 @@ func NewIpfsNode(cfg *config.Config, online bool) (*IpfsNode, error) {
 		}
 
 		net, err = inet.NewIpfsNetwork(context.TODO(), local, &mux.ProtocolMap{
-			mux.ProtocolID_Routing:  dhtService,
-			mux.ProtocolID_Exchange: exchangeService,
+			mux.ProtocolID_Routing:    dhtService,
+			mux.ProtocolID_Exchange:   exchangeService,
+			mux.ProtocolID_Diagnostic: diagService,
 		})
 		if err != nil {
 			return nil, err
@@ -134,15 +144,16 @@ func NewIpfsNode(cfg *config.Config, online bool) (*IpfsNode, error) {
 	dag := &merkledag.DAGService{Blocks: bs}
 
 	return &IpfsNode{
-		Config:    cfg,
-		Peerstore: &peerstore,
-		Datastore: d,
-		Blocks:    bs,
-		DAG:       dag,
-		Resolver:  &path.Resolver{DAG: dag},
-		Exchange:  exchangeSession,
-		Identity:  local,
-		Routing:   route,
+		Config:      cfg,
+		Peerstore:   &peerstore,
+		Datastore:   d,
+		Blocks:      bs,
+		DAG:         dag,
+		Resolver:    &path.Resolver{DAG: dag},
+		Exchange:    exchangeSession,
+		Identity:    local,
+		Routing:     route,
+		Diagnostics: diagnostics,
 	}, nil
 }
 

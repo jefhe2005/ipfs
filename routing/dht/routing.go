@@ -1,8 +1,6 @@
 package dht
 
 import (
-	"bytes"
-	"encoding/json"
 	"time"
 
 	context "github.com/jbenet/go-ipfs/Godeps/_workspace/src/code.google.com/p/go.net/context"
@@ -30,7 +28,7 @@ func (dht *IpfsDHT) PutValue(key u.Key, value []byte) error {
 	}
 
 	query := newQuery(key, func(ctx context.Context, p *peer.Peer) (*dhtQueryResult, error) {
-		u.DOut("[%s] PutValue qry part %v\n", dht.self.ID.Pretty(), p.ID.Pretty())
+		log.Debug("[%s] PutValue qry part %v", dht.self.ID.Pretty(), p.ID.Pretty())
 		err := dht.putValueToNetwork(ctx, p, string(key), value)
 		if err != nil {
 			return nil, err
@@ -39,7 +37,7 @@ func (dht *IpfsDHT) PutValue(key u.Key, value []byte) error {
 	})
 
 	_, err := query.Run(ctx, peers)
-	u.DOut("[%s] PutValue %v %v\n", dht.self.ID.Pretty(), key, value)
+	log.Info("[%s] PutValue %v %v", dht.self.ID.Pretty(), key, value)
 	return err
 }
 
@@ -112,6 +110,7 @@ func (dht *IpfsDHT) Provide(key u.Key) error {
 
 	//TODO FIX: this doesn't work! it needs to be sent to the actual nearest peers.
 	// `peers` are the closest peers we have, not the ones that should get the value.
+	// (whyrusleeping):Closest in terms of what?
 	for _, p := range peers {
 		err := dht.putProvider(ctx, p, string(key))
 		if err != nil {
@@ -286,7 +285,7 @@ func (dht *IpfsDHT) findPeerMultiple(id peer.ID, timeout time.Duration) (*peer.P
 	query := newQuery(u.Key(id), func(ctx context.Context, p *peer.Peer) (*dhtQueryResult, error) {
 		pmes, err := dht.findPeerSingle(ctx, p, id, routeLevel)
 		if err != nil {
-			u.DErr("getPeer error: %v\n", err)
+			log.Error("getPeer error: %v", err)
 			return nil, err
 		}
 
@@ -299,7 +298,7 @@ func (dht *IpfsDHT) findPeerMultiple(id peer.ID, timeout time.Duration) (*peer.P
 		for i, fp := range plist {
 			nxtp, err := dht.peerFromInfo(fp)
 			if err != nil {
-				u.DErr("findPeer error: %v\n", err)
+				log.Error("findPeer error: %v", err)
 				continue
 			}
 
@@ -329,40 +328,9 @@ func (dht *IpfsDHT) Ping(p *peer.Peer, timeout time.Duration) error {
 	ctx, _ := context.WithTimeout(context.TODO(), timeout)
 
 	// Thoughts: maybe this should accept an ID and do a peer lookup?
-	u.DOut("Enter Ping.\n")
+	log.Debug("Enter Ping.")
 
 	pmes := newMessage(Message_PING, "", 0)
 	_, err := dht.sendRequest(ctx, p, pmes)
 	return err
-}
-
-func (dht *IpfsDHT) getDiagnostic(timeout time.Duration) ([]*diagInfo, error) {
-	ctx, _ := context.WithTimeout(context.TODO(), timeout)
-
-	u.DOut("Begin Diagnostic")
-	peers := dht.routingTables[0].NearestPeers(kb.ConvertPeerID(dht.self.ID), 10)
-	var out []*diagInfo
-
-	query := newQuery(dht.self.Key(), func(ctx context.Context, p *peer.Peer) (*dhtQueryResult, error) {
-		pmes := newMessage(Message_DIAGNOSTIC, "", 0)
-		rpmes, err := dht.sendRequest(ctx, p, pmes)
-		if err != nil {
-			return nil, err
-		}
-
-		dec := json.NewDecoder(bytes.NewBuffer(rpmes.GetValue()))
-		for {
-			di := new(diagInfo)
-			err := dec.Decode(di)
-			if err != nil {
-				break
-			}
-
-			out = append(out, di)
-		}
-		return &dhtQueryResult{success: true}, nil
-	})
-
-	_, err := query.Run(ctx, peers)
-	return out, err
 }

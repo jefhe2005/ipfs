@@ -13,6 +13,7 @@ import (
 	peer "github.com/jbenet/go-ipfs/peer"
 	kb "github.com/jbenet/go-ipfs/routing/kbucket"
 	u "github.com/jbenet/go-ipfs/util"
+	logging "github.com/op/go-logging"
 
 	context "github.com/jbenet/go-ipfs/Godeps/_workspace/src/code.google.com/p/go.net/context"
 	ds "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/datastore.go"
@@ -20,6 +21,8 @@ import (
 
 	"github.com/jbenet/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
 )
+
+var log = logging.MustGetLogger("dht")
 
 // TODO. SEE https://github.com/jbenet/node-ipfs/blob/master/submodules/ipfs-dht/index.js
 
@@ -51,6 +54,7 @@ type IpfsDHT struct {
 
 	//lock to make diagnostics work better
 	diaglock sync.Mutex
+	diagMap  map[string]time.Time
 }
 
 // NewDHT creates a new DHT object with the given peer as the 'local' host
@@ -69,12 +73,13 @@ func NewDHT(p *peer.Peer, ps peer.Peerstore, net inet.Network, sender inet.Sende
 	dht.routingTables[1] = kb.NewRoutingTable(20, kb.ConvertPeerID(p.ID), time.Millisecond*100)
 	dht.routingTables[2] = kb.NewRoutingTable(20, kb.ConvertPeerID(p.ID), time.Hour)
 	dht.birth = time.Now()
+	dht.diagMap = make(map[string]time.Time)
 	return dht
 }
 
 // Connect to a new peer at the given address, ping and add to the routing table
 func (dht *IpfsDHT) Connect(npeer *peer.Peer) (*peer.Peer, error) {
-	u.DOut("Connect to new peer: %s\n", npeer.ID.Pretty())
+	log.Info("Connect to new peer: %s", npeer.ID.Pretty())
 
 	// TODO(jbenet,whyrusleeping)
 	//
@@ -126,7 +131,7 @@ func (dht *IpfsDHT) HandleMessage(ctx context.Context, mes msg.NetMessage) (msg.
 	dht.Update(mPeer)
 
 	// Print out diagnostic
-	u.DOut("[peer: %s] Got message type: '%s' [from = %s]\n",
+	log.Info("[peer: %s] Got message type: '%s' [from = %s]\n",
 		dht.self.ID.Pretty(),
 		Message_MessageType_name[int32(pmes.GetType())], mPeer.ID.Pretty())
 
@@ -168,7 +173,7 @@ func (dht *IpfsDHT) sendRequest(ctx context.Context, p *peer.Peer, pmes *Message
 	start := time.Now()
 
 	// Print out diagnostic
-	u.DOut("[peer: %s] Sent message type: '%s' [to = %s]\n",
+	log.Info("[peer: %s] Sent message type: '%s' [to = %s]\n",
 		dht.self.ID.Pretty(),
 		Message_MessageType_name[int32(pmes.GetType())], p.ID.Pretty())
 
@@ -231,10 +236,10 @@ func (dht *IpfsDHT) getValueOrPeers(ctx context.Context, p *peer.Peer,
 		return nil, nil, err
 	}
 
-	u.DOut("pmes.GetValue() %v\n", pmes.GetValue())
+	log.Debug("pmes.GetValue() %v", pmes.GetValue())
 	if value := pmes.GetValue(); value != nil {
 		// Success! We were given the value
-		u.DOut("getValueOrPeers: got value\n")
+		log.Debug("getValueOrPeers: got value")
 		return value, nil, nil
 	}
 
@@ -244,7 +249,7 @@ func (dht *IpfsDHT) getValueOrPeers(ctx context.Context, p *peer.Peer,
 		if err != nil {
 			return nil, nil, err
 		}
-		u.DOut("getValueOrPeers: get from providers\n")
+		log.Debug("getValueOrPeers: get from providers")
 		return val, nil, nil
 	}
 
@@ -257,7 +262,7 @@ func (dht *IpfsDHT) getValueOrPeers(ctx context.Context, p *peer.Peer,
 
 		addr, err := ma.NewMultiaddr(pb.GetAddr())
 		if err != nil {
-			u.PErr("%v\n", err.Error())
+			log.Error("%v\n", err.Error())
 			continue
 		}
 
@@ -272,11 +277,11 @@ func (dht *IpfsDHT) getValueOrPeers(ctx context.Context, p *peer.Peer,
 	}
 
 	if len(peers) > 0 {
-		u.DOut("getValueOrPeers: peers\n")
+		log.Debug("getValueOrPeers: peers\n")
 		return nil, peers, nil
 	}
 
-	u.DOut("getValueOrPeers: u.ErrNotFound\n")
+	log.Debug("getValueOrPeers: u.ErrNotFound\n")
 	return nil, nil, u.ErrNotFound
 }
 
@@ -298,13 +303,13 @@ func (dht *IpfsDHT) getFromPeerList(ctx context.Context, key u.Key,
 	for _, pinfo := range peerlist {
 		p, err := dht.ensureConnectedToPeer(pinfo)
 		if err != nil {
-			u.DErr("getFromPeers error: %s\n", err)
+			log.Error("getFromPeers error: %s", err)
 			continue
 		}
 
 		pmes, err := dht.getValueSingle(ctx, p, key, level)
 		if err != nil {
-			u.DErr("getFromPeers error: %s\n", err)
+			log.Error("getFromPeers error: %s", err)
 			continue
 		}
 
@@ -390,7 +395,7 @@ func (dht *IpfsDHT) addProviders(key u.Key, peers []*Message_Peer) []*peer.Peer 
 	for _, prov := range peers {
 		p, err := dht.peerFromInfo(prov)
 		if err != nil {
-			u.PErr("error getting peer from info: %v\n", err)
+			log.Error("error getting peer from info: %v\n", err)
 			continue
 		}
 
@@ -429,7 +434,7 @@ func (dht *IpfsDHT) betterPeerToQuery(pmes *Message) *peer.Peer {
 
 	// == to self? nil
 	if closer.ID.Equal(dht.self.ID) {
-		u.DOut("Attempted to return self! this shouldnt happen...\n")
+		log.Critical("Attempted to return self! this shouldnt happen...")
 		return nil
 	}
 
