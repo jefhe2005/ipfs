@@ -98,6 +98,7 @@ func (s *Swarm) close() error {
 	}
 	// close connections
 	conn.CloseConns(s.Connections()...)
+	close(s.Pipe.Incoming)
 	return nil
 }
 

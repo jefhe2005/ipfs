@@ -56,10 +56,10 @@ type Muxer struct {
 // NewMuxer constructs a muxer given a protocol map.
 func NewMuxer(ctx context.Context, mp ProtocolMap) *Muxer {
 	m := &Muxer{
-		Protocols:     mp,
-		Pipe:          msg.NewPipe(10),
-		ContextCloser: ctxc.NewContextCloser(ctx, nil),
+		Protocols: mp,
+		Pipe:      msg.NewPipe(10),
 	}
+	m.ContextCloser = ctxc.NewContextCloser(ctx, m.shutdown)
 
 	m.Children().Add(1)
 	go m.handleIncomingMessages()
@@ -69,6 +69,12 @@ func NewMuxer(ctx context.Context, mp ProtocolMap) *Muxer {
 	}
 
 	return m
+}
+
+func (m *Muxer) shutdown() error {
+	close(m.Pipe.Incoming)
+	close(m.Pipe.Outgoing)
+	return nil
 }
 
 // GetPipe implements the Protocol interface

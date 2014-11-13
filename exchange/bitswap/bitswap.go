@@ -34,10 +34,8 @@ func NetMessageSession(ctx context.Context, p peer.Peer,
 	notif := notifications.New()
 
 	go func() {
-		select {
-		case <-ctx.Done():
-			notif.Shutdown()
-		}
+		<-ctx.Done()
+		notif.Shutdown()
 	}()
 
 	bs := &bitswap{

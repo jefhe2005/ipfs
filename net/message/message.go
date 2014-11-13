@@ -69,7 +69,6 @@ func connectChans(a, b chan NetMessage) {
 		for {
 			m, more := <-a
 			if !more {
-				close(b)
 				return
 			}
 			b <- m
