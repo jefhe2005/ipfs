@@ -91,7 +91,7 @@ func (s *Swarm) SetConnHandler(handler ConnHandler) {
 // See peerstream.
 func (s *Swarm) SetStreamHandler(handler StreamHandler) {
 	s.swarm.SetStreamHandler(func(s *ps.Stream) {
-		handler(wrapStream(s))
+		go handler(wrapStream(s))
 	})
 }
 
