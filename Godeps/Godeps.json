@@ -94,6 +94,10 @@
 			"Rev": "253b2dc1ca8bae42c3b5b6e53dd2eab1a7551116"
 		},
 		{
+			"ImportPath": "github.com/hashicorp/yamux",
+			"Rev": "9feabe6854fadca1abec9cd3bd2a613fe9a34000"
+		},
+		{
 			"ImportPath": "github.com/inconshreveable/go-update",
 			"Rev": "221d034a558b4c21b0624b2a450c076913854a57"
 		},
@@ -141,7 +145,7 @@
 		},
 		{
 			"ImportPath": "github.com/jbenet/go-peerstream",
-			"Rev": "3f8972989ecf7b99db5d718b7ff2e1bf31011d4f"
+			"Rev": "df7c4464850188048661654243066f1b31504300"
 		},
 		{
 			"ImportPath": "github.com/jbenet/go-random",
