@@ -12,12 +12,14 @@ import (
 	ps "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream"
 	psmux "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream/transport/muxado"
 	psss "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream/transport/spdystream"
+	psy "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream/transport/yamux"
 )
 
 var log = eventlog.Logger("swarm2")
 
 var _ = psss.Transport
-var PSTransport = psmux.Transport
+var _ = psmux.Transport
+var PSTransport = psy.DefaultTransport
 
 // Swarm is a connection muxer, allowing connections to other peers to
 // be opened and closed, while still using the same Chan for all
