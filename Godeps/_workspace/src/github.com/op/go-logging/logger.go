@@ -55,7 +55,6 @@ type Record struct {
 	formatted string
 }
 
-// Formatted returns the string-formatted version of a record.
 func (r *Record) Formatted(calldepth int) string {
 	if r.formatted == "" {
 		var buf bytes.Buffer
@@ -65,8 +64,6 @@ func (r *Record) Formatted(calldepth int) string {
 	return r.formatted
 }
 
-// Message returns a string message for outputting. Redacts any record args
-// that implement the Redactor interface
 func (r *Record) Message() string {
 	if r.message == nil {
 		// Redact the arguments that implements the Redactor interface
@@ -81,22 +78,23 @@ func (r *Record) Message() string {
 	return *r.message
 }
 
-// Logger is a logging unit. It controls the flow of messages to a given
-// (swappable) backend.
 type Logger struct {
 	Module      string
 	backend     LeveledBackend
 	haveBackend bool
+
+	// ExtraCallDepth can be used to add additional call depth when getting the
+	// calling function. This is normally used when wrapping a logger.
+	ExtraCalldepth int
 }
 
-// SetBackend changes the backend of the logger.
 func (l *Logger) SetBackend(backend LeveledBackend) {
 	l.backend = backend
 	l.haveBackend = true
 }
 
-// GetLogger creates and returns a Logger object based on the module name.
 // TODO call NewLogger and remove MustGetLogger?
+// GetLogger creates and returns a Logger object based on the module name.
 func GetLogger(module string) (*Logger, error) {
 	return &Logger{Module: module}, nil
 }
@@ -161,12 +159,14 @@ func (l *Logger) log(lvl Level, format string, args ...interface{}) {
 
 	// calldepth=2 brings the stack up to the caller of the level
 	// methods, Info(), Fatal(), etc.
+	// ExtraCallDepth allows this to be extended further up the stack in case we
+	// are wrapping these methods, eg. to expose them package level
 	if l.haveBackend {
-		l.backend.Log(lvl, 2, record)
+		l.backend.Log(lvl, 2+l.ExtraCalldepth, record)
 		return
 	}
 
-	defaultBackend.Log(lvl, 2, record)
+	defaultBackend.Log(lvl, 2+l.ExtraCalldepth, record)
 }
 
 // Fatal is equivalent to l.Critical(fmt.Sprint()) followed by a call to os.Exit(1).
@@ -196,69 +196,33 @@ func (l *Logger) Panicf(format string, args ...interface{}) {
 	panic(s)
 }
 
-// Critical logs a message using CRITICAL as log level. (fmt.Sprint())
-func (l *Logger) Critical(args ...interface{}) {
-	s := fmt.Sprint(args...)
-	l.log(CRITICAL, "%s", s)
-}
-
-// Criticalf logs a message using CRITICAL as log level.
-func (l *Logger) Criticalf(format string, args ...interface{}) {
+// Critical logs a message using CRITICAL as log level.
+func (l *Logger) Critical(format string, args ...interface{}) {
 	l.log(CRITICAL, format, args...)
 }
 
-// Error logs a message using ERROR as log level. (fmt.Sprint())
-func (l *Logger) Error(args ...interface{}) {
-	s := fmt.Sprint(args...)
-	l.log(ERROR, "%s", s)
-}
-
-// Errorf logs a message using ERROR as log level.
-func (l *Logger) Errorf(format string, args ...interface{}) {
+// Error logs a message using ERROR as log level.
+func (l *Logger) Error(format string, args ...interface{}) {
 	l.log(ERROR, format, args...)
 }
 
 // Warning logs a message using WARNING as log level.
-func (l *Logger) Warning(args ...interface{}) {
-	s := fmt.Sprint(args...)
-	l.log(WARNING, "%s", s)
-}
-
-// Warningf logs a message using WARNING as log level.
-func (l *Logger) Warningf(format string, args ...interface{}) {
+func (l *Logger) Warning(format string, args ...interface{}) {
 	l.log(WARNING, format, args...)
 }
 
 // Notice logs a message using NOTICE as log level.
-func (l *Logger) Notice(args ...interface{}) {
-	s := fmt.Sprint(args...)
-	l.log(NOTICE, "%s", s)
-}
-
-// Noticef logs a message using NOTICE as log level.
-func (l *Logger) Noticef(format string, args ...interface{}) {
+func (l *Logger) Notice(format string, args ...interface{}) {
 	l.log(NOTICE, format, args...)
 }
 
 // Info logs a message using INFO as log level.
-func (l *Logger) Info(args ...interface{}) {
-	s := fmt.Sprint(args...)
-	l.log(INFO, "%s", s)
-}
-
-// Infof logs a message using INFO as log level.
-func (l *Logger) Infof(format string, args ...interface{}) {
+func (l *Logger) Info(format string, args ...interface{}) {
 	l.log(INFO, format, args...)
 }
 
 // Debug logs a message using DEBUG as log level.
-func (l *Logger) Debug(args ...interface{}) {
-	s := fmt.Sprint(args...)
-	l.log(DEBUG, "%s", s)
-}
-
-// Debugf logs a message using DEBUG as log level.
-func (l *Logger) Debugf(format string, args ...interface{}) {
+func (l *Logger) Debug(format string, args ...interface{}) {
 	l.log(DEBUG, format, args...)
 }
 
