@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	logging "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/op/go-logging"
+	logging "github.com/jbenet/go-ipfs/util/logging"
 )
 
 func init() {
@@ -31,7 +31,7 @@ const (
 )
 
 // loggers is the set of loggers in the system
-var loggers = map[string]*logging.Logger{}
+var loggers = map[string]opLoggerWrapper{}
 
 // POut is a shorthand printing function to output to Stdout.
 func POut(format string, a ...interface{}) {
@@ -56,7 +56,7 @@ func SetupLogging() {
 		var err error
 		lvl, err = logging.LogLevel(logenv)
 		if err != nil {
-			log.Errorf("logging.LogLevel() Error: %q", err)
+			log.Error("logging.LogLevel() Error: %q", err)
 			lvl = logging.ERROR // reset to ERROR, could be undefined now(?)
 		}
 	}
@@ -84,8 +84,8 @@ func SetAllLoggers(lvl logging.Level) {
 }
 
 // Logger retrieves a particular logger
-func Logger(name string) *logging.Logger {
-	log := logging.MustGetLogger(name)
+func Logger(name string) opLoggerWrapper {
+	log := opLoggerWrapper{logging.MustGetLogger(name)}
 	loggers[name] = log
 	return log
 }
