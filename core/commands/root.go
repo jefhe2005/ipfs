@@ -80,6 +80,7 @@ var rootSubcommands = map[string]*cmds.Command{
 	"object":    ObjectCmd,
 	"pin":       PinCmd,
 	"refs":      RefsCmd,
+	"routing":   RoutingCmd,
 	"swarm":     SwarmCmd,
 	"ping":      PingCmd,
 	"update":    UpdateCmd,

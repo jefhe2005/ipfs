@@ -416,3 +416,7 @@ func (dht *IpfsDHT) Bootstrap(ctx context.Context, queries int) error {
 	}
 	return nil
 }
+
+func (dht *IpfsDHT) GetRoutingTable() *kb.RoutingTable {
+	return dht.routingTable
+}

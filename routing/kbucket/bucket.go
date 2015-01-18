@@ -85,3 +85,13 @@ func (b *Bucket) Split(cpl int, target ID) *Bucket {
 func (b *Bucket) getIter() *list.Element {
 	return b.list.Front()
 }
+
+func (b *Bucket) Peers() []peer.ID {
+	b.lk.RLock()
+	defer b.lk.RUnlock()
+	var out []peer.ID
+	for i := b.getIter(); i != nil; i = i.Next() {
+		out = append(out, i.Value.(peer.ID))
+	}
+	return out
+}
