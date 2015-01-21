@@ -1,6 +1,7 @@
 package corehttp
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"net/http"
@@ -15,7 +16,9 @@ import (
 	"github.com/jbenet/go-ipfs/importer"
 	chunk "github.com/jbenet/go-ipfs/importer/chunk"
 	dag "github.com/jbenet/go-ipfs/merkledag"
+	p "github.com/jbenet/go-ipfs/path"
 	"github.com/jbenet/go-ipfs/routing"
+	ufs "github.com/jbenet/go-ipfs/unixfs"
 	uio "github.com/jbenet/go-ipfs/unixfs/io"
 	u "github.com/jbenet/go-ipfs/util"
 )
@@ -100,6 +103,10 @@ func (i *gatewayHandler) NewDagFromReader(r io.Reader) (*dag.Node, error) {
 		r, i.node.DAG, i.node.Pinning.GetManual(), chunk.DefaultSplitter)
 }
 
+func NewDagEmptyDir() *dag.Node {
+	return &dag.Node{Data: ufs.FolderPBData()}
+}
+
 func (i *gatewayHandler) AddNodeToDAG(nd *dag.Node) (u.Key, error) {
 	return i.node.DAG.Add(nd)
 }
@@ -113,6 +120,21 @@ func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	urlPath := r.URL.Path
+
+	if r.Method == "POST" && urlPath == "/" {
+		i.postHandler(w, r)
+		return
+	}
+
+	if r.Method == "PUT" {
+		i.putHandler(w, r, urlPath)
+		return
+	}
+
+	if r.Method == "DELETE" {
+		i.deleteHandler(w, r, urlPath)
+		return
+	}
 
 	nd, p, err := i.ResolvePath(ctx, urlPath)
 	if err != nil {
@@ -208,23 +230,172 @@ func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (i *gatewayHandler) postHandler(w http.ResponseWriter, r *http.Request) {
 	nd, err := i.NewDagFromReader(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Error(err)
-		w.Write([]byte(err.Error()))
+		internalWebError(w, err)
 		return
 	}
 
 	k, err := i.AddNodeToDAG(nd)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Error(err)
-		w.Write([]byte(err.Error()))
+		internalWebError(w, err)
 		return
 	}
 
-	//TODO: return json representation of list instead
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(mh.Multihash(k).B58String()))
+	http.Redirect(w, r, "/ipfs/"+mh.Multihash(k).B58String(), http.StatusCreated)
+}
+
+func (i *gatewayHandler) putEmptyDirHandler(w http.ResponseWriter, r *http.Request, path string) {
+	newnode := NewDagEmptyDir()
+
+	key, err := i.node.DAG.Add(newnode)
+	if err != nil {
+		webError(w, "Could not recursively add new node", err, http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/ipfs/"+key.String()+"/", http.StatusCreated)
+}
+
+func (i *gatewayHandler) putHandler(w http.ResponseWriter, r *http.Request, path string) {
+	var err error
+	if path == "/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn/" {
+		i.putEmptyDirHandler(w, r, path)
+		return
+	}
+
+	var newnode *dag.Node
+	if path[len(path)-1] == '/' {
+		newnode = NewDagEmptyDir()
+	} else {
+		newnode, err = i.NewDagFromReader(r.Body)
+		if err != nil {
+			webError(w, "Could not create DAG from request", err, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	h, components, err := p.SplitAbsPath(path)
+	if err != nil {
+		webError(w, "Could not split path", err, http.StatusInternalServerError)
+		return
+	}
+
+	if len(components) < 1 {
+		err = fmt.Errorf("Cannot override existing object")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		log.Error("%s", err)
+		return
+	}
+
+	rootnd, err := i.node.Resolver.DAG.Get(u.Key(h))
+	if err != nil {
+		webError(w, "Could not resolve root object", err, http.StatusBadRequest)
+		return
+	}
+
+	// resolving path components into merkledag nodes. if a component does not
+	// resolve, create empty directories (which will be linked and populated below.)
+	path_nodes, err := i.node.Resolver.ResolveLinks(rootnd, components[:len(components)-1])
+	if _, ok := err.(p.ErrNoLink); ok {
+		// Create empty directories, links will be made further down the code
+		for len(path_nodes) < len(components) {
+			path_nodes = append(path_nodes, NewDagEmptyDir())
+		}
+	} else if err != nil {
+		webError(w, "Could not resolve parent object", err, http.StatusBadRequest)
+		return
+	}
+
+	for i := len(path_nodes) - 1; i >= 0; i-- {
+		newnode, err = path_nodes[i].UpdateNodeLink(components[i], newnode)
+		if err != nil {
+			webError(w, "Could not update node links", err, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	err = i.node.DAG.AddRecursive(newnode)
+	if err != nil {
+		webError(w, "Could not add recursively new node", err, http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect to new path
+	key, err := newnode.Key()
+	if err != nil {
+		webError(w, "Could not get key of new node", err, http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/ipfs/"+key.String()+"/"+strings.Join(components, "/"), http.StatusCreated)
+}
+
+func (i *gatewayHandler) deleteHandler(w http.ResponseWriter, r *http.Request, path string) {
+	h, components, err := p.SplitAbsPath(path)
+	if err != nil {
+		webError(w, "Could not split path", err, http.StatusInternalServerError)
+		return
+	}
+
+	rootnd, err := i.node.Resolver.DAG.Get(u.Key(h))
+	if err != nil {
+		webError(w, "Could not resolve root object", err, http.StatusBadRequest)
+		return
+	}
+
+	path_nodes, err := i.node.Resolver.ResolveLinks(rootnd, components[:len(components)-1])
+	if err != nil {
+		webError(w, "Could not resolve parent object", err, http.StatusBadRequest)
+		return
+	}
+
+	err = path_nodes[len(path_nodes)-1].RemoveNodeLink(components[len(components)-1])
+	if err != nil {
+		webError(w, "Could not delete link", err, http.StatusBadRequest)
+		return
+	}
+
+	newnode := path_nodes[len(path_nodes)-1]
+	for i := len(path_nodes) - 2; i >= 0; i-- {
+		newnode, err = path_nodes[i].UpdateNodeLink(components[i], newnode)
+		if err != nil {
+			webError(w, "Could not update node links", err, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	err = i.node.DAG.AddRecursive(newnode)
+	if err != nil {
+		webError(w, "Could not add recursively new node", err, http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect to new path
+	key, err := newnode.Key()
+	if err != nil {
+		webError(w, "Could not get key of new node", err, http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/ipfs/"+key.String()+"/"+strings.Join(components[:len(components)-1], "/"), http.StatusCreated)
+}
+
+func webError(w http.ResponseWriter, message string, err error, defaultCode int) {
+	if _, ok := err.(p.ErrNoLink); ok {
+		webErrorWithCode(w, message, err, http.StatusNotFound)
+	} else if err == routing.ErrNotFound {
+		webErrorWithCode(w, message, err, http.StatusNotFound)
+	} else if err == context.DeadlineExceeded {
+		webErrorWithCode(w, message, err, http.StatusRequestTimeout)
+	} else {
+		webErrorWithCode(w, message, err, defaultCode)
+	}
+}
+
+func webErrorWithCode(w http.ResponseWriter, message string, err error, code int) {
+	w.WriteHeader(code)
+	log.Errorf("%s: %s", message, err)
+	w.Write([]byte(message + ": " + err.Error()))
 }
 
 // return a 500 error and log
