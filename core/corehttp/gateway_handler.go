@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
-	"path"
+	gopath "path"
 	"strings"
 	"time"
 
@@ -16,7 +16,7 @@ import (
 	"github.com/jbenet/go-ipfs/importer"
 	chunk "github.com/jbenet/go-ipfs/importer/chunk"
 	dag "github.com/jbenet/go-ipfs/merkledag"
-	p "github.com/jbenet/go-ipfs/path"
+	path "github.com/jbenet/go-ipfs/path"
 	"github.com/jbenet/go-ipfs/routing"
 	ufs "github.com/jbenet/go-ipfs/unixfs"
 	uio "github.com/jbenet/go-ipfs/unixfs/io"
@@ -74,7 +74,7 @@ func (i *gatewayHandler) loadTemplate() error {
 }
 
 func (i *gatewayHandler) ResolvePath(ctx context.Context, p string) (*dag.Node, string, error) {
-	p = path.Clean(p)
+	p = gopath.Clean(p)
 
 	if strings.HasPrefix(p, IpnsPathPrefix) {
 		elements := strings.Split(p[len(IpnsPathPrefix):], "/")
@@ -85,10 +85,10 @@ func (i *gatewayHandler) ResolvePath(ctx context.Context, p string) (*dag.Node, 
 		}
 
 		elements[0] = k.Pretty()
-		p = path.Join(elements...)
+		p = gopath.Join(elements...)
 	}
 	if !strings.HasPrefix(p, IpfsPathPrefix) {
-		p = path.Join(IpfsPathPrefix, p)
+		p = gopath.Join(IpfsPathPrefix, p)
 	}
 
 	node, err := i.node.Resolver.ResolvePath(p)
@@ -121,18 +121,18 @@ func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	urlPath := r.URL.Path
 
-	if r.Method == "POST" && urlPath == "/" {
+	if r.Method == "POST" {
 		i.postHandler(w, r)
 		return
 	}
 
 	if r.Method == "PUT" {
-		i.putHandler(w, r, urlPath)
+		i.putHandler(w, r)
 		return
 	}
 
 	if r.Method == "DELETE" {
-		i.deleteHandler(w, r, urlPath)
+		i.deleteHandler(w, r)
 		return
 	}
 
@@ -151,7 +151,7 @@ func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	etag := path.Base(p)
+	etag := gopath.Base(p)
 	if r.Header.Get("If-None-Match") == etag {
 		w.WriteHeader(http.StatusNotModified)
 		return
@@ -173,7 +173,7 @@ func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if err == nil {
 		defer dr.Close()
-		_, name := path.Split(urlPath)
+		_, name := gopath.Split(urlPath)
 		// set modtime to a really long time ago, since files are immutable and should stay cached
 		modtime := time.Unix(1, 0)
 		http.ServeContent(w, r, name, modtime, dr)
@@ -210,7 +210,7 @@ func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		di := directoryItem{link.Size, link.Name, path.Join(urlPath, link.Name)}
+		di := directoryItem{link.Size, link.Name, gopath.Join(urlPath, link.Name)}
 		dirListing = append(dirListing, di)
 	}
 
@@ -240,10 +240,12 @@ func (i *gatewayHandler) postHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/ipfs/"+mh.Multihash(k).B58String(), http.StatusCreated)
+	h := mh.Multihash(k).B58String()
+	w.Header().Set("IPFS-Hash", h)
+	http.Redirect(w, r, "/ipfs/"+h, http.StatusCreated)
 }
 
-func (i *gatewayHandler) putEmptyDirHandler(w http.ResponseWriter, r *http.Request, path string) {
+func (i *gatewayHandler) putEmptyDirHandler(w http.ResponseWriter, r *http.Request) {
 	newnode := NewDagEmptyDir()
 
 	key, err := i.node.DAG.Add(newnode)
@@ -252,18 +254,20 @@ func (i *gatewayHandler) putEmptyDirHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	w.Header().Set("IPFS-Hash", key.String())
 	http.Redirect(w, r, "/ipfs/"+key.String()+"/", http.StatusCreated)
 }
 
-func (i *gatewayHandler) putHandler(w http.ResponseWriter, r *http.Request, path string) {
+func (i *gatewayHandler) putHandler(w http.ResponseWriter, r *http.Request) {
+	pathext := r.URL.Path[5:]
 	var err error
-	if path == "/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn/" {
-		i.putEmptyDirHandler(w, r, path)
+	if r.URL.Path == "/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn/" {
+		i.putEmptyDirHandler(w, r)
 		return
 	}
 
 	var newnode *dag.Node
-	if path[len(path)-1] == '/' {
+	if pathext[len(pathext)-1] == '/' {
 		newnode = NewDagEmptyDir()
 	} else {
 		newnode, err = i.NewDagFromReader(r.Body)
@@ -273,7 +277,7 @@ func (i *gatewayHandler) putHandler(w http.ResponseWriter, r *http.Request, path
 		}
 	}
 
-	h, components, err := p.SplitAbsPath(path)
+	h, components, err := path.SplitAbsPath(r.URL.Path)
 	if err != nil {
 		webError(w, "Could not split path", err, http.StatusInternalServerError)
 		return
@@ -296,7 +300,7 @@ func (i *gatewayHandler) putHandler(w http.ResponseWriter, r *http.Request, path
 	// resolving path components into merkledag nodes. if a component does not
 	// resolve, create empty directories (which will be linked and populated below.)
 	path_nodes, err := i.node.Resolver.ResolveLinks(rootnd, components[:len(components)-1])
-	if _, ok := err.(p.ErrNoLink); ok {
+	if _, ok := err.(path.ErrNoLink); ok {
 		// Create empty directories, links will be made further down the code
 		for len(path_nodes) < len(components) {
 			path_nodes = append(path_nodes, NewDagEmptyDir())
@@ -327,11 +331,12 @@ func (i *gatewayHandler) putHandler(w http.ResponseWriter, r *http.Request, path
 		return
 	}
 
+	w.Header().Set("IPFS-Hash", key.String())
 	http.Redirect(w, r, "/ipfs/"+key.String()+"/"+strings.Join(components, "/"), http.StatusCreated)
 }
 
-func (i *gatewayHandler) deleteHandler(w http.ResponseWriter, r *http.Request, path string) {
-	h, components, err := p.SplitAbsPath(path)
+func (i *gatewayHandler) deleteHandler(w http.ResponseWriter, r *http.Request) {
+	h, components, err := path.SplitAbsPath(r.URL.Path)
 	if err != nil {
 		webError(w, "Could not split path", err, http.StatusInternalServerError)
 		return
@@ -377,11 +382,12 @@ func (i *gatewayHandler) deleteHandler(w http.ResponseWriter, r *http.Request, p
 		return
 	}
 
+	w.Header().Set("IPFS-Hash", key.String())
 	http.Redirect(w, r, "/ipfs/"+key.String()+"/"+strings.Join(components[:len(components)-1], "/"), http.StatusCreated)
 }
 
 func webError(w http.ResponseWriter, message string, err error, defaultCode int) {
-	if _, ok := err.(p.ErrNoLink); ok {
+	if _, ok := err.(path.ErrNoLink); ok {
 		webErrorWithCode(w, message, err, http.StatusNotFound)
 	} else if err == routing.ErrNotFound {
 		webErrorWithCode(w, message, err, http.StatusNotFound)
