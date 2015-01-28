@@ -15,6 +15,7 @@ import (
 const (
 	initOptionKwd = "init"
 	mountKwd      = "mount"
+	writableKwd   = "writable"
 	ipfsMountKwd  = "mount-ipfs"
 	ipnsMountKwd  = "mount-ipns"
 	// apiAddrKwd    = "address-api"
@@ -36,6 +37,7 @@ the daemon.
 	Options: []cmds.Option{
 		cmds.BoolOption(initOptionKwd, "Initialize IPFS with default settings if not already initialized"),
 		cmds.BoolOption(mountKwd, "Mounts IPFS to the filesystem"),
+		cmds.BoolOption(writableKwd, "Enable writing objects (with POST, PUT and DELETE)"),
 		cmds.StringOption(ipfsMountKwd, "Path to the mountpoint for IPFS (if using --mount)"),
 		cmds.StringOption(ipnsMountKwd, "Path to the mountpoint for IPNS (if using --mount)"),
 
@@ -158,9 +160,22 @@ func daemonFunc(req cmds.Request, res cmds.Response) {
 		rootRedirect = corehttp.RedirectOption("", cfg.Gateway.RootRedirect)
 	}
 
+	writable, writableOptionFound, err := req.Option(writableKwd).Bool()
+	if err != nil {
+		res.SetError(err, cmds.ErrNormal)
+		return
+	}
+	if !writableOptionFound {
+		writable = cfg.Gateway.Writable
+	}
+
+	if writable {
+		fmt.Printf("IPNS gateway mounted read-write\n")
+	}
+
 	if gatewayMaddr != nil {
 		go func() {
-			var opts = []corehttp.ServeOption{corehttp.GatewayOption}
+			var opts = []corehttp.ServeOption{corehttp.GatewayOption(writable)}
 			if rootRedirect != nil {
 				opts = append(opts, rootRedirect)
 			}
@@ -174,7 +189,7 @@ func daemonFunc(req cmds.Request, res cmds.Response) {
 	var opts = []corehttp.ServeOption{
 		corehttp.CommandsOption(*req.Context()),
 		corehttp.WebUIOption,
-		corehttp.GatewayOption,
+		corehttp.GatewayOption(true),
 	}
 	if rootRedirect != nil {
 		opts = append(opts, rootRedirect)

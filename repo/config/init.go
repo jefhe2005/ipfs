@@ -53,6 +53,7 @@ func Init(nBitsForKeypair int) (*Config, error) {
 
 		Gateway: Gateway{
 			RootRedirect: "",
+			Writable:     false,
 		},
 	}
 
