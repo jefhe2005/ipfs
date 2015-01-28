@@ -309,7 +309,7 @@ func (r *FSRepo) transitionToClosed() error {
 func (r *FSRepo) components() []component.Component {
 	return []component.Component{
 		&r.configComponent,
-		&r.datastoreComponent,
+		r.datastoreComponent,
 	}
 }
 
@@ -336,7 +336,18 @@ func componentBuilders() []componentBuilder {
 			Init:          component.InitDatastoreComponent,
 			IsInitialized: component.DatastoreComponentIsInitialized,
 			OpenHandler: func(r *FSRepo) error {
-				c := component.DatastoreComponent{}
+				var c component.DatastoreComponent
+				/*
+					switch r.Config().Datastore.Type {
+					case "leveldb":
+						c = new(component.LevelDBDatastoreComponent)
+					case "boltdb":
+						c = new(component.BoltDatastoreComponent)
+					default:
+						return errors.New("Unrecognized datastore type")
+					}
+				*/
+				c = new(component.LevelDBDatastoreComponent)
 				c.SetPath(r.path)
 				if err := c.Open(); err != nil {
 					return err

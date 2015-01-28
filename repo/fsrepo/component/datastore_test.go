@@ -20,8 +20,8 @@ func testRepoPath(t *testing.T, path ...string) string {
 func TestOpenMoreThanOnceInSameProcess(t *testing.T) {
 	t.Parallel()
 	path := testRepoPath(t)
-	dsc1 := DatastoreComponent{path: path}
-	dsc2 := DatastoreComponent{path: path}
+	dsc1 := LevelDBDatastoreComponent{path: path}
+	dsc2 := LevelDBDatastoreComponent{path: path}
 	assert.Nil(dsc1.Open(), t, "first repo should open successfully")
 	assert.Nil(dsc2.Open(), t, "second repo should open successfully")
 
