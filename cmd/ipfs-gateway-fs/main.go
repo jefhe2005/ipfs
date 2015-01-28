@@ -8,12 +8,15 @@ import (
 	"time"
 
 	context "github.com/jbenet/go-ipfs/Godeps/_workspace/src/code.google.com/p/go.net/context"
+	"github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/crowdmob/goamz/aws"
+	"github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/crowdmob/goamz/s3"
 	core "github.com/jbenet/go-ipfs/core"
 	corehttp "github.com/jbenet/go-ipfs/core/corehttp"
 	corerepo "github.com/jbenet/go-ipfs/core/corerepo"
 	coreunix "github.com/jbenet/go-ipfs/core/coreunix"
 	config "github.com/jbenet/go-ipfs/repo/config"
 	fsrepo "github.com/jbenet/go-ipfs/repo/fsrepo"
+	"github.com/jbenet/go-ipfs/thirdparty/s3-datastore"
 )
 
 var (
@@ -21,6 +24,8 @@ var (
 	refreshAssetsInterval  = flag.Duration("refresh-assets-interval", 30*time.Second, "refresh assets")
 	garbageCollectInterval = flag.Duration("gc-interval", 24*time.Hour, "frequency of repo garbage collection")
 	assetsPath             = flag.String("assets-path", "", "if provided, periodically adds contents of path to IPFS")
+	s3bucket               = flag.String("aws-bucket", "", "S3 bucket for routing datastore")
+	s3region               = flag.String("aws-region", aws.USWest2.Name, "S3 region")
 	host                   = flag.String("host", "/ip4/0.0.0.0/tcp/8080", "override the HTTP host listening address")
 	performGC              = flag.Bool("gc", false, "perform garbage collection")
 	nBitsForKeypair        = flag.Int("b", 1024, "number of bits for keypair (if repo is uninitialized)")
@@ -30,6 +35,9 @@ func main() {
 	flag.Parse()
 	if *assetsPath == "" {
 		log.Println("asset-path not provided. hosting gateway without file server functionality...")
+	}
+	if *s3bucket == "" {
+		log.Fatal("bucket is required")
 	}
 	if err := run(); err != nil {
 		log.Println(err)
@@ -111,4 +119,36 @@ func runFileServerWorker(ctx context.Context, node *core.IpfsNode) error {
 		}
 	}()
 	return nil
+}
+
+func makeS3Datastore() (*s3datastore.S3Datastore, error) {
+	auth, err := aws.EnvAuth()
+	if err != nil {
+		return nil, err
+	}
+
+	s3c := s3.New(auth, aws.Regions[*s3region])
+	b := s3c.Bucket(*s3bucket)
+	exists, err := b.Exists("initialized") // TODO lazily instantiate
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		if err := b.PutBucket(s3.PublicRead); err != nil {
+			switch e := err.(type) {
+			case *s3.Error:
+				log.Println(e.Code)
+			default:
+				return nil, err
+			}
+		}
+
+		// TODO create the initial value
+	}
+
+	return &s3datastore.S3Datastore{
+		Bucket: *s3bucket,
+		Client: s3c,
+	}, nil
 }
