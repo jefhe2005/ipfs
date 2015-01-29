@@ -12,12 +12,13 @@ test_init_ipfs
 test_launch_ipfs_daemon
 
 test_expect_success "GET IPFS path succeeds" '
-  echo "Hello Worlds!" > expected &&
-  HASH=`ipfs add -q expected` &&
+  echo "Hello Worlds!" > data &&
+  HASH=`ipfs add -q data` &&
   wget "http://127.0.0.1:5001/ipfs/$HASH" -O actual
 '
 
 test_expect_success "GET IPFS path output looks good" '
+  cat data > expected &&
   test_cmp expected actual &&
   rm actual
 '
@@ -54,6 +55,16 @@ test_expect_success "GET invalid IPFS path errors" '
 test_expect_success "GET invalid path errors" '
   test_must_fail wget http://127.0.0.1:5001/12345
 '
+
+test_expect_success "POST to /ipfs/ succeeds" '
+  wget --post-file=data --save-headers http://127.0.0.1:5001/ipfs/ -O response
+'
+
+test_expect_success "POST response Location header looks good" '
+  cat response | grep "Location: /ipfs/$HASH"
+'
+
+# TODO: PUT/DELETE tests, requires curl (which isn't on all testing machines)
 
 test_kill_ipfs_daemon
 
