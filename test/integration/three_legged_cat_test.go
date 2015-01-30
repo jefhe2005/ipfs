@@ -1,18 +1,22 @@
 package integrationtest
 
 import (
-	"bytes"
 	"io"
+	"bytes"
 	"math"
 	"testing"
 	"time"
 
 	context "github.com/jbenet/go-ipfs/Godeps/_workspace/src/code.google.com/p/go.net/context"
+	"github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
+	syncds "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/sync"
 	core "github.com/jbenet/go-ipfs/core"
-	coreunix "github.com/jbenet/go-ipfs/core/coreunix"
+	"github.com/jbenet/go-ipfs/core/corerouting"
+	"github.com/jbenet/go-ipfs/core/coreunix"
 	mocknet "github.com/jbenet/go-ipfs/p2p/net/mock"
 	"github.com/jbenet/go-ipfs/p2p/peer"
 	"github.com/jbenet/go-ipfs/thirdparty/unit"
+	ds2 "github.com/jbenet/go-ipfs/util/datastore2"
 	errors "github.com/jbenet/go-ipfs/util/debugerror"
 	testutil "github.com/jbenet/go-ipfs/util/testutil"
 )
@@ -80,17 +84,18 @@ func RunThreeLeggedCat(data []byte, conf testutil.LatencyConfig) error {
 	if len(peers) < numPeers {
 		return errors.New("test initialization error")
 	}
-	bootstrap, err := core.NewIPFSNode(ctx, MocknetTestRepo(peers[2], mn.Host(peers[2]), conf))
+	bootstrap, err := core.NewIPFSNode(ctx, MocknetTestRepo(peers[2], mn.Host(peers[2]), conf, corerouting.GrandCentralServer(
+		ds2.CloserWrap(syncds.MutexWrap(datastore.NewMapDatastore())))))
 	if err != nil {
 		return err
 	}
 	defer bootstrap.Close()
-	adder, err := core.NewIPFSNode(ctx, MocknetTestRepo(peers[0], mn.Host(peers[0]), conf))
+	adder, err := core.NewIPFSNode(ctx, MocknetTestRepo(peers[0], mn.Host(peers[0]), conf, corerouting.GrandCentralClient(peer.PeerInfo{ID: peers[2]})))
 	if err != nil {
 		return err
 	}
 	defer adder.Close()
-	catter, err := core.NewIPFSNode(ctx, MocknetTestRepo(peers[1], mn.Host(peers[1]), conf))
+	catter, err := core.NewIPFSNode(ctx, MocknetTestRepo(peers[1], mn.Host(peers[1]), conf, corerouting.GrandCentralClient(peer.PeerInfo{ID: peers[2]})))
 	if err != nil {
 		return err
 	}
