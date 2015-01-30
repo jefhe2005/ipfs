@@ -8,15 +8,19 @@ import (
 	"time"
 
 	context "github.com/jbenet/go-ipfs/Godeps/_workspace/src/code.google.com/p/go.net/context"
-	"github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/crowdmob/goamz/aws"
-	"github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/crowdmob/goamz/s3"
+	aws "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/crowdmob/goamz/aws"
+	s3 "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/crowdmob/goamz/s3"
+	"github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
+	syncds "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/sync"
 	core "github.com/jbenet/go-ipfs/core"
 	corehttp "github.com/jbenet/go-ipfs/core/corehttp"
 	corerepo "github.com/jbenet/go-ipfs/core/corerepo"
+	"github.com/jbenet/go-ipfs/core/corerouting"
 	coreunix "github.com/jbenet/go-ipfs/core/coreunix"
 	config "github.com/jbenet/go-ipfs/repo/config"
 	fsrepo "github.com/jbenet/go-ipfs/repo/fsrepo"
-	"github.com/jbenet/go-ipfs/thirdparty/s3-datastore"
+	s3datastore "github.com/jbenet/go-ipfs/thirdparty/s3-datastore"
+	ds2 "github.com/jbenet/go-ipfs/util/datastore2"
 )
 
 var (
@@ -61,13 +65,19 @@ func run() error {
 			return err
 		}
 	}
-
 	repo := fsrepo.At(repoPath)
 	if err := repo.Open(); err != nil { // owned by node
 		return err
 	}
-
-	node, err := core.NewIPFSNode(ctx, core.Online(repo))
+	s3, err := makeS3Datastore()
+	if err != nil {
+		return err
+	}
+	enhanced, err := enhanceDatastore(s3)
+	if err != nil {
+		return err
+	}
+	node, err := core.NewIPFSNode(ctx, core.OnlineWithRouting(repo, corerouting.GrandCentralServer(enhanced)))
 	if err != nil {
 		return err
 	}
@@ -122,6 +132,9 @@ func runFileServerWorker(ctx context.Context, node *core.IpfsNode) error {
 }
 
 func makeS3Datastore() (*s3datastore.S3Datastore, error) {
+
+	// FIXME get ENV through flags?
+
 	auth, err := aws.EnvAuth()
 	if err != nil {
 		return nil, err
@@ -151,4 +164,9 @@ func makeS3Datastore() (*s3datastore.S3Datastore, error) {
 		Bucket: *s3bucket,
 		Client: s3c,
 	}, nil
+}
+
+func enhanceDatastore(d datastore.Datastore) (datastore.ThreadSafeDatastore, error) {
+	// TODO cache
+	return ds2.CloserWrap(syncds.MutexWrap(d)), nil
 }
