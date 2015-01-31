@@ -96,6 +96,32 @@ func TestBuilderConsistency(t *testing.T) {
 	}
 }
 
+func TestFastBuilderConsistency(t *testing.T) {
+	nbytes := 100000
+	buf := new(bytes.Buffer)
+	io.CopyN(buf, u.NewTimeSeededRand(), int64(nbytes))
+	should := dup(buf.Bytes())
+	dagserv := merkledag.Mock(t)
+	nd, err := BuildFastDagFromReader(buf, dagserv, nil, chunk.DefaultSplitter)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err := uio.NewDagReader(context.Background(), nd, dagserv)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	out, err := ioutil.ReadAll(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = arrComp(out, should)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func arrComp(a, b []byte) error {
 	if len(a) != len(b) {
 		return fmt.Errorf("Arrays differ in length. %d != %d", len(a), len(b))
@@ -191,6 +217,43 @@ func TestSeekingBasic(t *testing.T) {
 	read := bytes.NewReader(should)
 	dnp := getDagservAndPinner(t)
 	nd, err := BuildDagFromReader(read, dnp.ds, dnp.mp, &chunk.SizeSplitter{500})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rs, err := uio.NewDagReader(context.Background(), nd, dnp.ds)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	start := int64(4000)
+	n, err := rs.Seek(start, os.SEEK_SET)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n != start {
+		t.Fatal("Failed to seek to correct offset")
+	}
+
+	out, err := ioutil.ReadAll(rs)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = arrComp(out, should[start:])
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestFastDagSeekingBasic(t *testing.T) {
+	nbytes := int64(256 * 1024)
+	should := make([]byte, nbytes)
+	u.NewTimeSeededRand().Read(should)
+
+	read := bytes.NewReader(should)
+	dnp := getDagservAndPinner(t)
+	nd, err := BuildFastDagFromReader(read, dnp.ds, dnp.mp, &chunk.SizeSplitter{500})
 	if err != nil {
 		t.Fatal(err)
 	}
