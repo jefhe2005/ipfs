@@ -42,6 +42,10 @@
 			"Rev": "068b72961a6bc5b4a82cf4fc14ccc724c0cfa73a"
 		},
 		{
+			"ImportPath": "github.com/andrewtj/dnssd",
+			"Rev": "d890e4fdcb25dc98eb93c02925115fd8c5e1d5e9"
+		},
+		{
 			"ImportPath": "github.com/braintree/manners",
 			"Comment": "0.3.1-2-g5280e25",
 			"Rev": "5280e250f2795914acbeb2bf3b55dd5a2d1fba52"
@@ -118,6 +122,10 @@
 		{
 			"ImportPath": "github.com/hashicorp/golang-lru",
 			"Rev": "253b2dc1ca8bae42c3b5b6e53dd2eab1a7551116"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/mdns",
+			"Rev": "e4aba3430cd7360a45a596da8eacff13abb8ae2d"
 		},
 		{
 			"ImportPath": "github.com/hashicorp/yamux",
@@ -222,6 +230,10 @@
 		{
 			"ImportPath": "github.com/maybebtc/pubsub",
 			"Rev": "39ce5f556423a4c7223b370fa17a3bbd75b2d197"
+		},
+		{
+			"ImportPath": "github.com/miekg/dns",
+			"Rev": "a76c0a363dd4798064787c742fdf54a593787e91"
 		},
 		{
 			"ImportPath": "github.com/mitchellh/go-homedir",
