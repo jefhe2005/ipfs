@@ -2,6 +2,7 @@ package corerouting
 
 import (
 	"errors"
+	"fmt"
 
 	context "github.com/jbenet/go-ipfs/Godeps/_workspace/src/code.google.com/p/go.net/context"
 	datastore "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
@@ -77,7 +78,7 @@ func GrandCentralClient(remotes ...ipfsaddr.IPFSAddr) core.RoutingOption {
 		// TODO move to bootstrap method
 		for _, info := range remoteInfos {
 			if err := node.PeerHost.Connect(ctx, info); err != nil {
-				return nil, err // TODO
+				return nil, fmt.Errorf("failed to dial %s: %s", info.ID, err)
 			}
 		}
 
