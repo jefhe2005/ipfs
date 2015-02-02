@@ -5,11 +5,13 @@ import (
 
 	context "github.com/jbenet/go-ipfs/Godeps/_workspace/src/code.google.com/p/go.net/context"
 	datastore "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
+	ma "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
 	core "github.com/jbenet/go-ipfs/core"
 	"github.com/jbenet/go-ipfs/p2p/peer"
 	routing "github.com/jbenet/go-ipfs/routing"
 	grandcentral "github.com/jbenet/go-ipfs/routing/grandcentral"
 	gcproxy "github.com/jbenet/go-ipfs/routing/grandcentral/proxy"
+	ipfsaddr "github.com/jbenet/go-ipfs/util/ipfsaddr"
 )
 
 // NB: DHT option is included in the core to avoid 1) because it's a sane
@@ -49,7 +51,7 @@ func GrandCentralServer(recordSource datastore.ThreadSafeDatastore) core.Routing
 }
 
 // TODO doc
-func GrandCentralClient(remotes ...peer.PeerInfo) core.RoutingOption {
+func GrandCentralClient(remotes ...ipfsaddr.IPFSAddr) core.RoutingOption {
 	return func(ctx context.Context, node *core.IpfsNode) (routing.IpfsRouting, error) {
 		if len(remotes) < 1 {
 			return nil, errServersMissing
@@ -64,8 +66,16 @@ func GrandCentralClient(remotes ...peer.PeerInfo) core.RoutingOption {
 			return nil, errors.New("need peerstore")
 		}
 
+		var remoteInfos []peer.PeerInfo
+		for _, remote := range remotes {
+			remoteInfos = append(remoteInfos, peer.PeerInfo{
+				ID:    remote.ID(),
+				Addrs: []ma.Multiaddr{},
+			})
+		}
+
 		// TODO move to bootstrap method
-		for _, info := range remotes {
+		for _, info := range remoteInfos {
 			if err := node.PeerHost.Connect(ctx, info); err != nil {
 				return nil, err // TODO
 			}
@@ -75,7 +85,7 @@ func GrandCentralClient(remotes ...peer.PeerInfo) core.RoutingOption {
 		// bootstrap peers provided to the core.Node. Careful...
 
 		var ids []peer.ID
-		for _, info := range remotes {
+		for _, info := range remoteInfos {
 			ids = append(ids, info.ID)
 		}
 		proxy := gcproxy.Standard(node.PeerHost, ids)
