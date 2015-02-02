@@ -9,6 +9,7 @@ import (
 	"github.com/jbenet/go-ipfs/core"
 	commands "github.com/jbenet/go-ipfs/core/commands"
 	corehttp "github.com/jbenet/go-ipfs/core/corehttp"
+	"github.com/jbenet/go-ipfs/core/corerouting"
 	fsrepo "github.com/jbenet/go-ipfs/repo/fsrepo"
 	util "github.com/jbenet/go-ipfs/util"
 	"github.com/jbenet/go-ipfs/util/debugerror"
@@ -16,6 +17,7 @@ import (
 
 const (
 	initOptionKwd = "init"
+	gcrKwd        = "gcr"
 	mountKwd      = "mount"
 	writableKwd   = "writable"
 	ipfsMountKwd  = "mount-ipfs"
@@ -38,6 +40,7 @@ the daemon.
 
 	Options: []cmds.Option{
 		cmds.BoolOption(initOptionKwd, "Initialize IPFS with default settings if not already initialized"),
+		cmds.BoolOption(gcrKwd, "Enables Grandcentral Routing"),
 		cmds.BoolOption(mountKwd, "Mounts IPFS to the filesystem"),
 		cmds.BoolOption(writableKwd, "Enable writing objects (with POST, PUT and DELETE)"),
 		cmds.StringOption(ipfsMountKwd, "Path to the mountpoint for IPFS (if using --mount)"),
@@ -98,9 +101,25 @@ func daemonFunc(req cmds.Request, res cmds.Response) {
 		return
 	}
 
+	useGCR, _, err := req.Option(gcrKwd).Bool()
+	if err != nil {
+		res.SetError(err, cmds.ErrNormal)
+		return
+	}
+	var configOption = core.Online(repo)
+	if useGCR {
+		servers, err := repo.Config().GCR.ServerIPFSAddrs()
+		if err != nil {
+			res.SetError(err, cmds.ErrNormal)
+			repo.Close() // because ownership hasn't been transferred to the node
+			return
+		}
+		configOption = core.OnlineWithRouting(repo, corerouting.GrandCentralClient(servers...))
+	}
+
 	// OK!!! Now we're ready to construct the node.
 	// make sure we construct an online node.
-	node, err := core.NewIPFSNode(ctx.Context, core.Online(repo))
+	node, err := core.NewIPFSNode(ctx.Context, configOption)
 	if err != nil {
 		res.SetError(err, cmds.ErrNormal)
 		return
