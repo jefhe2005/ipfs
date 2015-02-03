@@ -84,4 +84,8 @@ func (c *client) Ping(ctx context.Context, p peer.ID) (time.Duration, error) {
 	return 0, nil
 }
 
+func (c *client) Bootstrap() error {
+	return nil
+}
+
 var _ routing.IpfsRouting = &client{}
