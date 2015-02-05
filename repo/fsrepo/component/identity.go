@@ -51,6 +51,18 @@ func InitIdentityComponent(fspath string, conf *config.Config) error {
 // always called with a nil config parameter. Other components rely on the
 // config, to keep the interface uniform, it is special-cased.
 func (c *IdentityComponent) Open(_ *config.Config) error {
+
+	toStr := func(data []byte, err error) (string, error) { return string(data), err }
+
+	// TODO keep these in-memory somewhere
+	_, err := toStr(ioutil.ReadFile(path.Join(c.path, filenamePublicKey)))
+	if err != nil {
+		return err
+	}
+	_, err = toStr(ioutil.ReadFile(path.Join(c.path, filenamePrivateKey)))
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
