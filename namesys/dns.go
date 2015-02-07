@@ -2,6 +2,7 @@ package namesys
 
 import (
 	"net"
+	"strings"
 
 	context "github.com/jbenet/go-ipfs/Godeps/_workspace/src/code.google.com/p/go.net/context"
 	b58 "github.com/jbenet/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-base58"
@@ -10,6 +11,9 @@ import (
 
 	u "github.com/jbenet/go-ipfs/util"
 )
+
+// IPNSDNSTXTPrefix is the prfix used in IPNS DNS TXT Records.
+const IPNSDNSTXTPrefix = "ipns="
 
 // DNSResolver implements a Resolver on DNS domains
 type DNSResolver struct {
@@ -33,6 +37,11 @@ func (r *DNSResolver) Resolve(ctx context.Context, name string) (u.Key, error) {
 	}
 
 	for _, t := range txt {
+		if !strings.HasPrefix(t, IPNSDNSTXTPrefix) {
+			continue
+		}
+
+		t = t[len(IPNSDNSTXTPrefix):]
 		chk := b58.Decode(t)
 		if len(chk) == 0 {
 			continue
