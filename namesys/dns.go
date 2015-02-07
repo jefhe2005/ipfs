@@ -20,12 +20,6 @@ const (
 	// (this is basically to create a non-ipfs/ipns specific way to resolve links.
 	// we can easily imagine a dnslink=/dns/foo.com or dnslink=http://foo.com)
 	DNSLinkTXTPrefix = "dnslink="
-
-	// IPNSPathPrefix denotes an ipns path
-	IPNSPathPrefix = "/ipns/"
-
-	// IPFSPathPrefix denotes an ipfs path
-	IPFSPathPrefix = "/ipfs/"
 )
 
 // DNSResolver implements a Resolver on DNS domains
@@ -42,7 +36,7 @@ func (r *DNSResolver) CanResolve(name string) bool {
 // Resolve implements Resolver
 // TXT records for a given domain name should contain a b58
 // encoded multihash.
-func (r *DNSResolver) Resolve(ctx context.Context, name string) (u.Key, error) {
+func (r *DNSResolver) Resolve(ctx context.Context, name string) (string, error) {
 	log.Info("DNSResolver resolving %v", name)
 	txt, err := net.LookupTXT(name)
 	if err != nil {
@@ -56,17 +50,17 @@ func (r *DNSResolver) Resolve(ctx context.Context, name string) (u.Key, error) {
 
 		txtValue := txtRecord[len(DNSLinkTXTPrefix):]
 
-		var key u.Key
+		var val string
 		var err error
 
 		switch {
 		case strings.HasPrefix(txtValue, IPNSPathPrefix): // ipns=/ipns/...
-			key, err = r.resolveIPNSPath(txtValue)
+			val, err = r.resolveIPNSPath(txtValue)
 		case strings.HasPrefix(txtValue, IPFSPathPrefix): // ipns=/ipfs/...
-			key, err = r.resolveIPNSPath(txtValue)
+			val, err = r.resolveIPNSPath(txtValue)
 		default: // ipns=<base58-encoded-multihash>
 			// benefit of the doubt. resolve any multihash as an ipfs path
-			key, err = r.resolveMultihash(txtValue)
+			val, err = r.resolveMultihash(txtValue)
 		}
 
 		if err != nil {
@@ -74,7 +68,7 @@ func (r *DNSResolver) Resolve(ctx context.Context, name string) (u.Key, error) {
 			log.Info("cannot resolve DNS TXT record: %s %s %s", name, txtRecord, err)
 			continue
 		}
-		return key, nil
+		return val, nil
 	}
 
 	return "", ErrResolveFailed
@@ -94,7 +88,7 @@ func (r *DNSResolver) resolveMultihash(h string) (u.Key, error) {
 	return u.Key(chk), nil
 }
 
-func (r *DNSResolver) resolveIPFSPath(p string) (u.Key, error) {
+func (r *DNSResolver) resolveIPFSPath(p string) (string, error) {
 	m, components, err := path.SplitAbsPath(path.FromString(p))
 	if err != nil {
 		return "", fmt.Errorf("invalid path: %s", err)
@@ -109,6 +103,9 @@ func (r *DNSResolver) resolveIPFSPath(p string) (u.Key, error) {
 	return u.Key(m), nil
 }
 
-func (r *DNSResolver) resolveIPNSPath(path string) (u.Key, error) {
-	return "", errors.New("ipns-to-ipns resolution not yet implemented")
+func (r *DNSResolver) resolveIPNSPath(p string) (string, error) {
+	if !isIPNSPath(p) {
+		return "", errors.New("not an ipns path")
+	}
+	return p, nil
 }
