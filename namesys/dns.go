@@ -16,8 +16,10 @@ import (
 )
 
 const (
-	// IPNSDNSTXTPrefix is the prfix used in IPNS DNS TXT Records.
-	IPNSDNSTXTPrefix = "ipns="
+	// DNSLinkTXTPrefix is the prefix used in DNS Link TXT Records.
+	// (this is basically to create a non-ipfs/ipns specific way to resolve links.
+	// we can easily imagine a dnslink=/dns/foo.com or dnslink=http://foo.com)
+	DNSLinkTXTPrefix = "dnslink="
 
 	// IPNSPathPrefix denotes an ipns path
 	IPNSPathPrefix = "/ipns/"
@@ -48,11 +50,11 @@ func (r *DNSResolver) Resolve(ctx context.Context, name string) (u.Key, error) {
 	}
 
 	for _, txtRecord := range txt {
-		if !strings.HasPrefix(txtRecord, IPNSDNSTXTPrefix) {
+		if !strings.HasPrefix(txtRecord, DNSLinkTXTPrefix) {
 			continue
 		}
 
-		txtValue := txtRecord[len(IPNSDNSTXTPrefix):]
+		txtValue := txtRecord[len(DNSLinkTXTPrefix):]
 
 		var key u.Key
 		var err error
