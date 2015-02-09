@@ -57,20 +57,22 @@ func (i Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug("Incoming API request: ", r.URL)
 
 	// error on external referers (to prevent CSRF attacks)
-	referer := r.Referer()
-	scheme := r.URL.Scheme
-	if len(scheme) == 0 {
-		scheme = "http"
-	}
-	host := fmt.Sprintf("%s://%s/", scheme, r.Host)
-	// empty string means the user isn't following a link (they are directly typing in the url)
-	if referer != "" && !strings.HasPrefix(referer, host) {
-		w.WriteHeader(http.StatusForbidden)
-		w.Write([]byte("403 - Forbidden"))
-		return
-	}
+	// override if we set to allow other origins
+	if len(i.origin) == 0 {
+		referer := r.Referer()
+		scheme := r.URL.Scheme
+		if len(scheme) == 0 {
+			scheme = "http"
+		}
+		host := fmt.Sprintf("%s://%s/", scheme, r.Host)
+		// empty string means the user isn't following a link (they are directly typing in the url)
+		if referer != "" && !strings.HasPrefix(referer, host) {
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte("403 - Forbidden"))
+			return
+		}
 
-	if len(i.origin) > 0 {
+	} else {
 		w.Header().Set("Access-Control-Allow-Origin", i.origin)
 	}
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
