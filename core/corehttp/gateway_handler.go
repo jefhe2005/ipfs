@@ -26,6 +26,9 @@ import (
 const (
 	IpfsPathPrefix = "/ipfs/"
 	IpnsPathPrefix = "/ipns/"
+
+	downloadShort = "dl"
+	downloadLong  = "download"
 )
 
 type gateway interface {
@@ -172,6 +175,15 @@ func (i *gatewayHandler) getHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// gets a querystring argument that forces the file to be downloaded instead
+	// of being displayed in browsers
+	download := false
+	if arg := r.URL.Query().Get(downloadShort); len(arg) > 0 {
+		download = true
+	} else if arg := r.URL.Query().Get(downloadLong); len(arg) > 0 {
+		download = true
+	}
+
 	nd, p, err := i.ResolvePath(ctx, urlPath)
 	if err != nil {
 		if err == routing.ErrNotFound {
@@ -223,6 +235,10 @@ func (i *gatewayHandler) getHandler(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		defer dr.Close()
 		_, name := gopath.Split(urlPath)
+		if download {
+			// force the file to be downloaded
+			w.Header().Set("Content-Disposition", "attachment;")
+		}
 		http.ServeContent(w, r, name, modtime, dr)
 		return
 	}
