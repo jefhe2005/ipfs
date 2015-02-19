@@ -180,16 +180,26 @@ func (ds *dagService) GetDAG(ctx context.Context, root *Node) []NodeGetter {
 // GetNodes returns an array of 'NodeGetter' promises, with each corresponding
 // to the key with the same index as the passed in keys
 func (ds *dagService) GetNodes(ctx context.Context, keys []u.Key) []NodeGetter {
+
+	// Early out if no work to do
+	if len(keys) == 0 {
+		return nil
+	}
+
 	promises := make([]NodeGetter, len(keys))
 	sendChans := make([]chan<- *Node, len(keys))
 	for i, _ := range keys {
 		promises[i], sendChans[i] = newNodePromise(ctx)
 	}
 
+	dedupedKeys := dedupeKeys(keys)
 	go func() {
-		blkchan := ds.Blocks.GetBlocks(ctx, keys)
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
 
-		for {
+		blkchan := ds.Blocks.GetBlocks(ctx, dedupedKeys)
+
+		for count := 0; count < len(keys); {
 			select {
 			case blk, ok := <-blkchan:
 				if !ok {
@@ -204,6 +214,7 @@ func (ds *dagService) GetNodes(ctx context.Context, keys []u.Key) []NodeGetter {
 				}
 				is := FindLinks(keys, blk.Key(), 0)
 				for _, i := range is {
+					count++
 					sendChans[i] <- nd
 				}
 			case <-ctx.Done():
@@ -212,6 +223,19 @@ func (ds *dagService) GetNodes(ctx context.Context, keys []u.Key) []NodeGetter {
 		}
 	}()
 	return promises
+}
+
+// Remove duplicates from a list of keys
+func dedupeKeys(ks []u.Key) []u.Key {
+	kmap := make(map[u.Key]struct{})
+	var out []u.Key
+	for _, k := range ks {
+		if _, ok := kmap[k]; !ok {
+			kmap[k] = struct{}{}
+			out = append(out, k)
+		}
+	}
+	return out
 }
 
 func newNodePromise(ctx context.Context) (NodeGetter, chan<- *Node) {
