@@ -25,7 +25,7 @@ type IdentityComponent struct {
 	path string // required at instantiation
 }
 
-func InitIdentityComponent(fspath string, conf *config.Config) error {
+func InitIdentityComponent(fspath string, _ *config.Config) error {
 	if IdentityComponentIsInitialized(fspath) {
 		return nil
 	}
