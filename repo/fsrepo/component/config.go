@@ -14,14 +14,12 @@ var _ Initializer = InitConfigComponent
 var _ InitializationChecker = ConfigComponentIsInitialized
 
 // ConfigComponent abstracts the config component of the FSRepo.
-// NB: create with makeConfigComponent function.
 // NOT THREAD-SAFE
 type ConfigComponent struct {
 	path   string         // required at instantiation
 	config *config.Config // assigned on Open()
 }
 
-// fsrepoConfigInit initializes the FSRepo's ConfigComponent.
 func InitConfigComponent(path string, conf *config.Config) error {
 	if ConfigComponentIsInitialized(path) {
 		return nil
