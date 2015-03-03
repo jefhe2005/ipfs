@@ -21,6 +21,9 @@ type ConfigComponent struct {
 }
 
 func InitConfigComponent(path string, conf *config.Config) error {
+	if err := InitIdentityComponent(path, conf); err != nil {
+		return err
+	}
 	if ConfigComponentIsInitialized(path) {
 		return nil
 	}
@@ -49,6 +52,12 @@ func (c *ConfigComponent) Open(_ *config.Config) error {
 	if err != nil {
 		return err
 	}
+	idcomponent := IdentityComponent{}
+	idcomponent.SetPath(c.path)
+	if err := idcomponent.Open(conf); err != nil {
+		return err
+	}
+
 	c.config = conf
 	return nil
 }
@@ -116,6 +125,9 @@ func (c *ConfigComponent) SetPath(p string) {
 // ConfigComponentIsInitialized returns true if the repo is initialized at
 // provided |path|.
 func ConfigComponentIsInitialized(path string) bool {
+	if !IdentityComponentIsInitialized(path) {
+		return false
+	}
 	configFilename, err := config.Filename(path)
 	if err != nil {
 		return false

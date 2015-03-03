@@ -25,22 +25,28 @@ type IdentityComponent struct {
 	path string // required at instantiation
 }
 
-func InitIdentityComponent(fspath string, _ *config.Config) error {
+func InitIdentityComponent(fspath string, c *config.Config) error {
 	if IdentityComponentIsInitialized(fspath) {
 		return nil
 	}
-	identity, err := config.InitIdentity(ioutil.Discard, minBits)
-	if err != nil {
+	files := []struct {
+		Filename string
+		Data     string
+	}{
+		{Filename: filenamePublicKey, Data: c.Identity.PeerID},
+		{Filename: filenamePrivateKey, Data: c.Identity.PrivKey},
+	}
+
+	// ensure directory exists before attempting to create file
+	if err := os.MkdirAll(fspath, os.ModePerm); err != nil {
 		return err
 	}
-	files := [][2]string{
-		[2]string{filenamePublicKey, identity.PeerID},
-		[2]string{filenamePrivateKey, identity.PrivKey},
-	}
 	for _, pair := range files {
-		filename := pair[0]
-		data := []byte(pair[1])
-		if err := ioutil.WriteFile(path.Join(fspath, filename), data, os.ModePerm); err != nil {
+
+		f := path.Join(fspath, pair.Filename)
+		d := []byte(pair.Data)
+
+		if err := ioutil.WriteFile(f, d, os.ModePerm); err != nil {
 			return err
 		}
 	}
@@ -50,19 +56,21 @@ func InitIdentityComponent(fspath string, _ *config.Config) error {
 // Open returns an error if the config file is not present. This component is
 // always called with a nil config parameter. Other components rely on the
 // config, to keep the interface uniform, it is special-cased.
-func (c *IdentityComponent) Open(_ *config.Config) error {
+func (c *IdentityComponent) Open(conf *config.Config) error {
 
 	toStr := func(data []byte, err error) (string, error) { return string(data), err }
 
 	// TODO keep these in-memory somewhere
-	_, err := toStr(ioutil.ReadFile(path.Join(c.path, filenamePublicKey)))
+	pub, err := toStr(ioutil.ReadFile(path.Join(c.path, filenamePublicKey)))
 	if err != nil {
 		return err
 	}
-	_, err = toStr(ioutil.ReadFile(path.Join(c.path, filenamePrivateKey)))
+	pri, err := toStr(ioutil.ReadFile(path.Join(c.path, filenamePrivateKey)))
 	if err != nil {
 		return err
 	}
+	conf.Identity.PeerID = pub
+	conf.Identity.PrivKey = pri
 	return nil
 }
 
