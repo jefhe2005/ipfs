@@ -148,6 +148,8 @@ func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+
 	errmsg := "Method " + r.Method + " not allowed: "
 	if !i.config.Writable {
 		w.WriteHeader(http.StatusMethodNotAllowed)
