@@ -2,6 +2,7 @@ package swarm
 
 import (
 	"fmt"
+	"gopkg.in/errgo.v1"
 
 	ic "github.com/ipfs/go-ipfs/p2p/crypto"
 	inet "github.com/ipfs/go-ipfs/p2p/net"
@@ -96,7 +97,7 @@ func wrapConn(psc *ps.Conn) (*Conn, error) {
 	if _, ok := psc.NetConn().(conn.Conn); !ok {
 		// this should never happen. if we see it ocurring it means that we added
 		// a Listener to the ps.Swarm that is NOT one of our net/conn.Listener.
-		return nil, fmt.Errorf("swarm connHandler: invalid conn (not a conn.Conn): %s", psc)
+		return nil, errgo.Newf("swarm connHandler: invalid conn (not a conn.Conn): %s", psc)
 	}
 	return (*Conn)(psc), nil
 }
@@ -119,7 +120,7 @@ func (s *Swarm) newConnSetup(ctx context.Context, psConn *ps.Conn) (*Conn, error
 	// wrap with a Conn
 	sc, err := wrapConn(psConn)
 	if err != nil {
-		return nil, err
+		return nil, errgo.Notef(err, "wrapConn failed")
 	}
 
 	// if we have a public key, make sure we add it to our peerstore!

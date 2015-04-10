@@ -1,8 +1,6 @@
 package swarm
 
 import (
-	"fmt"
-
 	mconn "github.com/ipfs/go-ipfs/metrics/conn"
 	inet "github.com/ipfs/go-ipfs/p2p/net"
 	conn "github.com/ipfs/go-ipfs/p2p/net/conn"
@@ -14,6 +12,7 @@ import (
 	ps "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream"
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	multierr "github.com/ipfs/go-ipfs/thirdparty/multierr"
+	"gopkg.in/errgo.v1"
 )
 
 // Open listeners for each network the swarm should listen on
@@ -21,7 +20,7 @@ func (s *Swarm) listen(addrs []ma.Multiaddr) error {
 
 	for _, addr := range addrs {
 		if !addrutil.AddrUsable(addr, true) {
-			return fmt.Errorf("cannot use addr: %s", addr)
+			return errgo.Newf("cannot use addr: %s", addr)
 		}
 	}
 
@@ -29,11 +28,11 @@ func (s *Swarm) listen(addrs []ma.Multiaddr) error {
 
 	// listen on every address
 	for i, addr := range addrs {
-		err := s.setupListener(addr)
-		if err != nil {
+		if err := s.setupListener(addr); err != nil {
 			if retErr.Errors == nil {
 				retErr.Errors = make([]error, len(addrs))
 			}
+			err = errgo.Notef(err, "setupListener(%s) failed", addr)
 			retErr.Errors[i] = err
 			log.Debugf("Failed to listen on: %s - %s", addr, err)
 		}
@@ -66,7 +65,7 @@ func (s *Swarm) setupListener(maddr ma.Multiaddr) error {
 	log.Debugf("Swarm Listening at %s", maddr)
 	list, err := conn.Listen(s.cg.Context(), maddr, s.local, sk)
 	if err != nil {
-		return err
+		return errgo.Notef(err, "conn.Listen(%s) failed", maddr.String())
 	}
 
 	if cw, ok := list.(conn.ListenerConnWrapper); ok {
@@ -79,7 +78,7 @@ func (s *Swarm) setupListener(maddr ma.Multiaddr) error {
 	// and streams!
 	sl, err := s.swarm.AddListener(list)
 	if err != nil {
-		return err
+		return errgo.Notef(err, "swarm.AddListener()")
 	}
 	log.Debugf("Swarm Listeners at %s", s.ListenAddresses())
 
@@ -105,7 +104,7 @@ func (s *Swarm) setupListener(maddr ma.Multiaddr) error {
 				if !more {
 					return
 				}
-				log.Debugf("swarm listener accept error: %s", err)
+				log.Error("swarm listener accept error: %s", err)
 			case <-ctx.Done():
 				return
 			}
@@ -132,7 +131,7 @@ func (s *Swarm) connHandler(c *ps.Conn) *Conn {
 	if err != nil {
 		log.Debug(err)
 		log.Event(ctx, "newConnHandlerDisconnect", lgbl.NetConn(c.NetConn()), lgbl.Error(err))
-		c.Close() // boom. close it.
+		checkAndLog(c.Close())
 		return nil
 	}
 

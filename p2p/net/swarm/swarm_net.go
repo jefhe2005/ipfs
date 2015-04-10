@@ -2,6 +2,7 @@ package swarm
 
 import (
 	"fmt"
+	"gopkg.in/errgo.v1"
 
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 
@@ -136,7 +137,7 @@ func (n *Network) NewStream(p peer.ID) (inet.Stream, error) {
 	log.Debugf("[%s] network opening stream to peer [%s]", n.local, p)
 	s, err := n.Swarm().NewStreamWithPeer(p)
 	if err != nil {
-		return nil, err
+		return nil, errgo.Notef(err, "network.NewStream(%s) failed", p)
 	}
 
 	return inet.Stream(s), nil

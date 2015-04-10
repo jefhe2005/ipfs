@@ -2,29 +2,20 @@
 // information to allow for easier debugging.
 package debugerror
 
-import (
-	"errors"
-	"fmt"
-
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/facebookgo/stackerr"
-	"github.com/ipfs/go-ipfs/util"
-)
+import "gopkg.in/errgo.v1"
 
 func Errorf(format string, a ...interface{}) error {
-	return Wrap(fmt.Errorf(format, a...))
+	return errgo.Newf(format, a)
 }
 
 // New returns an error that contains a stack trace (in debug mode)
 func New(s string) error {
-	if util.Debug {
-		return stackerr.New(s)
-	}
-	return errors.New(s)
+	return errgo.New(s)
 }
 
 func Wrap(err error) error {
-	if util.Debug {
-		return stackerr.Wrap(err)
+	if err != nil {
+		return errgo.Notef(err, "wrapped error")
 	}
-	return err
+	return nil
 }

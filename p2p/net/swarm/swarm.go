@@ -3,7 +3,6 @@
 package swarm
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -18,6 +17,7 @@ import (
 	ps "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream"
 	psy "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream/transport/yamux"
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"gopkg.in/errgo.v1"
 )
 
 var log = eventlog.Logger("swarm2")
@@ -82,7 +82,7 @@ func filterAddrs(listenAddrs []ma.Multiaddr) ([]ma.Multiaddr, error) {
 	if len(listenAddrs) > 0 {
 		filtered := addrutil.FilterUsableAddrs(listenAddrs)
 		if len(filtered) < 1 {
-			return nil, fmt.Errorf("swarm cannot use any addr in: %s", listenAddrs)
+			return nil, errgo.Newf("swarm cannot use any addr in: %s", listenAddrs)
 		}
 		listenAddrs = filtered
 	}
@@ -149,12 +149,15 @@ func (s *Swarm) NewStreamWithPeer(p peer.ID) (*Stream, error) {
 	if len(s.ConnectionsToPeer(p)) == 0 {
 		log.Debug("Swarm: NewStreamWithPeer no connections. Attempting to connect...")
 		if _, err := s.Dial(context.Background(), p); err != nil {
-			return nil, err
+			return nil, errgo.Notef(err, "NewStreamWithPeer(%s) - not connected. failed", p)
 		}
 	}
 	log.Debug("Swarm: NewStreamWithPeer...")
 
 	st, err := s.swarm.NewStreamWithGroup(p)
+	if err != nil {
+		return nil, errgo.Notef(err, "NewStreamWithGroup(%s) failed", p)
+	}
 	return wrapStream(st), err
 }
 
