@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	u "github.com/ipfs/go-ipfs/util"
-	"gopkg.in/errgo.v1"
 )
 
 var log = u.Logger("config")

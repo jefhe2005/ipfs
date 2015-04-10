@@ -2,7 +2,7 @@
 // information to allow for easier debugging.
 package debugerror
 
-import "gopkg.in/errgo.v1"
+import "github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 
 func Errorf(format string, a ...interface{}) error {
 	return errgo.Newf(format, a)

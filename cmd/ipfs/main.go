@@ -4,7 +4,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"gopkg.in/errgo.v1"
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	"io"
 	"math/rand"
 	"os"

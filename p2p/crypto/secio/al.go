@@ -12,8 +12,7 @@ import (
 	"strings"
 
 	bfish "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/crypto/blowfish"
-	"gopkg.in/errgo.v1"
-
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	ci "github.com/ipfs/go-ipfs/p2p/crypto"
 )
 

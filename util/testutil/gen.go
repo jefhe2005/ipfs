@@ -9,10 +9,10 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	ci "github.com/ipfs/go-ipfs/p2p/crypto"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	u "github.com/ipfs/go-ipfs/util"
-	"gopkg.in/errgo.v1"
 
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
 )

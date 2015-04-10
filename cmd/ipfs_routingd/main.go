@@ -13,6 +13,7 @@ import (
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/fzzy/radix/redis"
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	core "github.com/ipfs/go-ipfs/core"
 	corerouting "github.com/ipfs/go-ipfs/core/corerouting"
 	config "github.com/ipfs/go-ipfs/repo/config"
@@ -20,7 +21,6 @@ import (
 	redisds "github.com/ipfs/go-ipfs/thirdparty/redis-datastore"
 	s3datastore "github.com/ipfs/go-ipfs/thirdparty/s3-datastore"
 	ds2 "github.com/ipfs/go-ipfs/util/datastore2"
-	"gopkg.in/errgo.v1"
 )
 
 var (

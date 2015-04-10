@@ -8,7 +8,7 @@ import (
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse"
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/fs"
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-ctxgroup"
-	"gopkg.in/errgo.v1"
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 )
 
 // mount implements go-ipfs/fuse/mount

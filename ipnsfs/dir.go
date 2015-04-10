@@ -5,8 +5,7 @@ import (
 	"os"
 	"sync"
 
-	"gopkg.in/errgo.v1"
-
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	dag "github.com/ipfs/go-ipfs/merkledag"
 	ft "github.com/ipfs/go-ipfs/unixfs"
 	ufspb "github.com/ipfs/go-ipfs/unixfs/pb"

@@ -11,8 +11,8 @@ import (
 	manet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net"
 	ps "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream"
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	multierr "github.com/ipfs/go-ipfs/thirdparty/multierr"
-	"gopkg.in/errgo.v1"
 )
 
 // Open listeners for each network the swarm should listen on

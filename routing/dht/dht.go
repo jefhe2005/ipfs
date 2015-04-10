@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	ci "github.com/ipfs/go-ipfs/p2p/crypto"
 	host "github.com/ipfs/go-ipfs/p2p/host"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
@@ -20,7 +21,6 @@ import (
 	record "github.com/ipfs/go-ipfs/routing/record"
 	"github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	u "github.com/ipfs/go-ipfs/util"
-	"gopkg.in/errgo.v1"
 
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
 	ctxgroup "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-ctxgroup"

@@ -6,8 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	"gopkg.in/errgo.v1"
-
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	u "github.com/ipfs/go-ipfs/util"
 )
 

@@ -2,8 +2,7 @@ package swarm
 
 import (
 	"fmt"
-	"gopkg.in/errgo.v1"
-
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	ic "github.com/ipfs/go-ipfs/p2p/crypto"
 	inet "github.com/ipfs/go-ipfs/p2p/net"
 	conn "github.com/ipfs/go-ipfs/p2p/net/conn"

@@ -3,7 +3,7 @@ package mount
 
 import (
 	"fmt"
-	"gopkg.in/errgo.v1"
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	"os/exec"
 	"runtime"
 	"time"

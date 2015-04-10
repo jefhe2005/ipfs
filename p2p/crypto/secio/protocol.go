@@ -9,12 +9,12 @@ import (
 
 	msgio "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-msgio"
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	ci "github.com/ipfs/go-ipfs/p2p/crypto"
 	pb "github.com/ipfs/go-ipfs/p2p/crypto/secio/internal/pb"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	u "github.com/ipfs/go-ipfs/util"
-	"gopkg.in/errgo.v1"
 )
 
 var log = eventlog.Logger("secio")

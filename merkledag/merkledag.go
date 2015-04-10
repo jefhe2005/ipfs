@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	blocks "github.com/ipfs/go-ipfs/blocks"
 	bserv "github.com/ipfs/go-ipfs/blockservice"
 	u "github.com/ipfs/go-ipfs/util"
-	"gopkg.in/errgo.v1"
 )
 
 var log = u.Logger("merkledag")

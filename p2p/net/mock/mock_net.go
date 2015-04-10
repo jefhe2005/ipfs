@@ -4,6 +4,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	ic "github.com/ipfs/go-ipfs/p2p/crypto"
 	host "github.com/ipfs/go-ipfs/p2p/host"
 	bhost "github.com/ipfs/go-ipfs/p2p/host/basic"
@@ -11,7 +12,6 @@ import (
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	p2putil "github.com/ipfs/go-ipfs/p2p/test/util"
 	testutil "github.com/ipfs/go-ipfs/util/testutil"
-	"gopkg.in/errgo.v1"
 
 	ctxgroup "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-ctxgroup"
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"

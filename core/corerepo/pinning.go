@@ -1,11 +1,11 @@
 package corerepo
 
 import (
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	"github.com/ipfs/go-ipfs/core"
 	"github.com/ipfs/go-ipfs/merkledag"
 	path "github.com/ipfs/go-ipfs/path"
 	u "github.com/ipfs/go-ipfs/util"
-	"gopkg.in/errgo.v1"
 )
 
 func Pin(n *core.IpfsNode, paths []string, recursive bool) ([]u.Key, error) {

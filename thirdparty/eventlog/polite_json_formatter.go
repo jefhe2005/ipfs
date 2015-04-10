@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/Sirupsen/logrus"
-	"gopkg.in/errgo.v1"
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 )
 
 // PoliteJSONFormatter marshals entries into JSON encoded slices (without

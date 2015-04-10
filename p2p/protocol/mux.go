@@ -6,10 +6,10 @@ import (
 	"sync"
 
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	inet "github.com/ipfs/go-ipfs/p2p/net"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
-	"gopkg.in/errgo.v1"
 )
 
 var log = eventlog.Logger("net/mux")

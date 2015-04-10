@@ -3,7 +3,7 @@ package nat
 import (
 	"errors"
 	"fmt"
-	"gopkg.in/errgo.v1"
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	"strconv"
 	"strings"
 	"sync"

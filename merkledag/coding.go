@@ -4,8 +4,7 @@ import (
 	"sort"
 
 	mh "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multihash"
-	"gopkg.in/errgo.v1"
-
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 	pb "github.com/ipfs/go-ipfs/merkledag/internal/pb"
 	u "github.com/ipfs/go-ipfs/util"
 )

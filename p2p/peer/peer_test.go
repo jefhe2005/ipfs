@@ -11,7 +11,7 @@ import (
 	tu "github.com/ipfs/go-ipfs/util/testutil"
 
 	b58 "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-base58"
-	"gopkg.in/errgo.v1"
+	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/errgo.v1"
 )
 
 var gen1 keyset // generated
