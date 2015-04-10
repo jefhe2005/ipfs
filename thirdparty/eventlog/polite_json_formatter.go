@@ -2,9 +2,9 @@ package eventlog
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/Sirupsen/logrus"
+	"gopkg.in/errgo.v1"
 )
 
 // PoliteJSONFormatter marshals entries into JSON encoded slices (without
@@ -14,7 +14,7 @@ type PoliteJSONFormatter struct{}
 func (f *PoliteJSONFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	serialized, err := json.Marshal(entry.Data)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
+		return nil, errgo.Notef(err, "json.Marshal() failed - %+v", entry.Data)
 	}
 	return append(serialized, '\n'), nil
 }

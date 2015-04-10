@@ -2,10 +2,11 @@ package commands
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"reflect"
 	"strings"
+
+	"gopkg.in/errgo.v1"
 
 	u "github.com/ipfs/go-ipfs/util"
 )
@@ -145,7 +146,7 @@ func (c *Command) Resolve(path []string) ([]*Command, error) {
 
 		if cmd == nil {
 			pathS := strings.Join(path[0:i], "/")
-			return nil, fmt.Errorf("Undefined command: '%s'", pathS)
+			return nil, errgo.Newf("Undefined command: '%s'", pathS)
 		}
 
 		cmds[i+1] = cmd
@@ -181,7 +182,7 @@ func (c *Command) GetOptions(path []string) (map[string]Option, error) {
 	for _, opt := range options {
 		for _, name := range opt.Names() {
 			if _, found := optionsMap[name]; found {
-				return nil, fmt.Errorf("Option name '%s' used multiple times", name)
+				return nil, errgo.Newf("Option name '%s' used multiple times", name)
 			}
 
 			optionsMap[name] = opt
@@ -245,7 +246,7 @@ func (c *Command) Subcommand(id string) *Command {
 // checkArgValue returns an error if a given arg value is not valid for the given Argument
 func checkArgValue(v string, found bool, def Argument) error {
 	if !found && def.Required {
-		return fmt.Errorf("Argument '%s' is required", def.Name)
+		return errgo.Newf("Argument '%s' is required", def.Name)
 	}
 
 	return nil

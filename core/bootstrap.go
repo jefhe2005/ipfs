@@ -2,7 +2,6 @@ package core
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"math/rand"
 	"sync"
@@ -14,6 +13,7 @@ import (
 	config "github.com/ipfs/go-ipfs/repo/config"
 	math2 "github.com/ipfs/go-ipfs/thirdparty/math2"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
+	"gopkg.in/errgo.v1"
 
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
 	goprocess "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess"
@@ -196,7 +196,7 @@ func bootstrapConnect(ctx context.Context, ph host.Host, peers []peer.PeerInfo) 
 		}
 	}
 	if count == len(peers) {
-		return fmt.Errorf("failed to bootstrap. %s", err)
+		return errgo.Notef(err, "failed to bootstrap. %s")
 	}
 	return nil
 }

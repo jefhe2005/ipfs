@@ -58,13 +58,13 @@ test_expect_success "recursively pin afile" '
 '
 
 test_expect_success "pinning directly should fail now" '
-	echo "Error: pin: $HASH already pinned recursively" >expected3 &&
+	echo "Error: Pinning.Pin (r:false) failed: $HASH already pinned recursively" >expected3 &&
 	test_must_fail ipfs pin add "$HASH" 2>actual3 &&
 	test_cmp expected3 actual3
 '
 
 test_expect_success "'ipfs pin rm <hash>' should fail" '
-	echo "Error: $HASH is pinned recursively" >expected4 &&
+	echo "Error: Pinning.Unpin (r:false) failed: $HASH is pinned recursively" >expected4 &&
 	test_must_fail ipfs pin rm "$HASH" 2>actual4 &&
 	test_cmp expected4 actual4
 '

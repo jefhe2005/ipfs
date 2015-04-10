@@ -2,7 +2,6 @@ package peer_test
 
 import (
 	"encoding/base64"
-	"fmt"
 	"strings"
 	"testing"
 
@@ -12,6 +11,7 @@ import (
 	tu "github.com/ipfs/go-ipfs/util/testutil"
 
 	b58 "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-base58"
+	"gopkg.in/errgo.v1"
 )
 
 var gen1 keyset // generated
@@ -76,7 +76,7 @@ func (ks *keyset) load(hpkp, skBytesStr string) error {
 	ks.hpk = string(u.Hash(bpk))
 	ks.hpkp = b58.Encode([]byte(ks.hpk))
 	if ks.hpkp != hpkp {
-		return fmt.Errorf("hpkp doesn't match key. %s", hpkp)
+		return errgo.Newf("hpkp doesn't match key. %s", hpkp)
 	}
 	return nil
 }

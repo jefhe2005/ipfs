@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"gopkg.in/errgo.v1"
 	"io"
 	"os"
 	"strings"
@@ -177,7 +178,7 @@ func (r *response) Marshal() (io.Reader, error) {
 		var ok bool
 		marshaller, ok = marshallers[encType]
 		if !ok {
-			return nil, fmt.Errorf("No marshaller found for encoding type '%s'", enc)
+			return nil, errgo.Newf("No marshaller found for encoding type '%s'", enc)
 		}
 	}
 

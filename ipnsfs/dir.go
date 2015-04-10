@@ -2,9 +2,10 @@ package ipnsfs
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"sync"
+
+	"gopkg.in/errgo.v1"
 
 	dag "github.com/ipfs/go-ipfs/merkledag"
 	ft "github.com/ipfs/go-ipfs/unixfs"
@@ -122,7 +123,7 @@ func (d *Directory) childDir(name string) (*Directory, error) {
 		d.childDirs[name] = ndir
 		return ndir, nil
 	case ufspb.Data_File:
-		return nil, fmt.Errorf("%s is not a directory", name)
+		return nil, errgo.Newf("%s is not a directory", name)
 	case ufspb.Data_Metadata:
 		return nil, ErrNotYetImplemented
 	default:

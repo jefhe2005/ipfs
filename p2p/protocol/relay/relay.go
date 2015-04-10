@@ -1,10 +1,10 @@
 package relay
 
 import (
-	"fmt"
 	"io"
 
 	mh "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multihash"
+	"gopkg.in/errgo.v1"
 
 	host "github.com/ipfs/go-ipfs/p2p/host"
 	inet "github.com/ipfs/go-ipfs/p2p/net"
@@ -57,14 +57,14 @@ func (rs *RelayService) handleStream(s inet.Stream) error {
 	// read the header (src and dst peer.IDs)
 	src, dst, err := ReadHeader(s)
 	if err != nil {
-		return fmt.Errorf("stream with bad header: %s", err)
+		return errgo.Notef(err, "stream with bad header: %s")
 	}
 
 	local := rs.host.ID()
 
 	switch {
 	case src == local:
-		return fmt.Errorf("relaying from self")
+		return errgo.New("relaying from self")
 	case dst == local: // it's for us! yaaay.
 		log.Debugf("%s consuming stream from %s", local, src)
 		return rs.consumeStream(s)
@@ -85,7 +85,7 @@ func (rs *RelayService) consumeStream(s inet.Stream) error {
 func (rs *RelayService) pipeStream(src, dst peer.ID, s inet.Stream) error {
 	s2, err := rs.openStreamToPeer(dst)
 	if err != nil {
-		return fmt.Errorf("failed to open stream to peer: %s -- %s", dst, err)
+		return errgo.Notef(err, "failed to open stream to peer: %s -- %s", dst)
 	}
 
 	if err := WriteHeader(s2, src, dst); err != nil {
@@ -141,10 +141,10 @@ func WriteHeader(w io.Writer, src, dst peer.ID) error {
 	// write header to w.
 	mhw := mh.NewWriter(w)
 	if err := mhw.WriteMultihash(mh.Multihash(src)); err != nil {
-		return fmt.Errorf("failed to write relay header: %s -- %s", dst, err)
+		return errgo.Notef(err, "failed to write relay header: %s -- %s", dst)
 	}
 	if err := mhw.WriteMultihash(mh.Multihash(dst)); err != nil {
-		return fmt.Errorf("failed to write relay header: %s -- %s", dst, err)
+		return errgo.Notef(err, "failed to write relay header: %s -- %s", dst)
 	}
 
 	return nil

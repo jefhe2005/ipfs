@@ -1,19 +1,19 @@
 package secio
 
 import (
-	"errors"
-	"fmt"
-	"strings"
-
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/hmac"
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"errors"
 	"hash"
+	"strings"
 
 	bfish "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/crypto/blowfish"
+	"gopkg.in/errgo.v1"
+
 	ci "github.com/ipfs/go-ipfs/p2p/crypto"
 )
 
@@ -73,7 +73,7 @@ func newMac(hashType string, key []byte) (HMAC, error) {
 	case "SHA256":
 		return HMAC{hmac.New(sha256.New, key), sha256.Size}, nil
 	default:
-		return HMAC{}, fmt.Errorf("Unrecognized hash type: %s", hashType)
+		return HMAC{}, errgo.Newf("Unrecognized hash type: %s", hashType)
 	}
 }
 
@@ -84,7 +84,7 @@ func newBlockCipher(cipherT string, key []byte) (cipher.Block, error) {
 	case "Blowfish":
 		return bfish.NewCipher(key)
 	default:
-		return nil, fmt.Errorf("Unrecognized cipher type: %s", cipherT)
+		return nil, errgo.Newf("Unrecognized cipher type: %s", cipherT)
 	}
 }
 

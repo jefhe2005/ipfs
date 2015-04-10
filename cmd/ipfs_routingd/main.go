@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -21,6 +20,7 @@ import (
 	redisds "github.com/ipfs/go-ipfs/thirdparty/redis-datastore"
 	s3datastore "github.com/ipfs/go-ipfs/thirdparty/s3-datastore"
 	ds2 "github.com/ipfs/go-ipfs/util/datastore2"
+	"gopkg.in/errgo.v1"
 )
 
 var (
@@ -67,7 +67,7 @@ func run() error {
 	case "redis":
 		redisClient, err := redis.Dial("tcp", *redisHost)
 		if err != nil {
-			return fmt.Errorf("could not connect to redis: %s", err)
+			return errgo.Notef(err, "could not connect to redis: %s")
 		}
 		if *redisPassword != "" {
 			if err := redisClient.Cmd("AUTH", *redisPassword).Err; err != nil {

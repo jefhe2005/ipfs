@@ -3,12 +3,12 @@
 package mount
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse"
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/fs"
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-ctxgroup"
+	"gopkg.in/errgo.v1"
 )
 
 // mount implements go-ipfs/fuse/mount
@@ -69,7 +69,7 @@ func (m *mount) mount() error {
 	// wait for the mount process to be done, or timed out.
 	select {
 	case <-time.After(MountTimeout):
-		return fmt.Errorf("Mounting %s timed out.", m.MountPoint())
+		return errgo.Newf("Mounting %s timed out.", m.MountPoint())
 	case err := <-errs:
 		return err
 	case <-m.fuseConn.Ready:

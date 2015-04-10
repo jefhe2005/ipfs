@@ -20,6 +20,7 @@ import (
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	protocol "github.com/ipfs/go-ipfs/p2p/protocol"
 	ctxutil "github.com/ipfs/go-ipfs/util/ctx"
+	"gopkg.in/errgo.v1"
 
 	pb "github.com/ipfs/go-ipfs/diagnostics/internal/pb"
 	util "github.com/ipfs/go-ipfs/util"
@@ -156,7 +157,7 @@ func (d *Diagnostics) GetDiagnostic(timeout time.Duration) ([]*DiagInfo, error) 
 	pmes.SetTimeoutDuration(timeout - HopTimeoutDecrement) // decrease timeout per hop
 	dpeers, err := d.getDiagnosticFromPeers(ctx, d.getPeers(), pmes)
 	if err != nil {
-		return nil, fmt.Errorf("diagnostic from peers err: %s", err)
+		return nil, errgo.Notef(err, "diagnostic from peers err: %s")
 	}
 
 	di := d.getDiagInfo()

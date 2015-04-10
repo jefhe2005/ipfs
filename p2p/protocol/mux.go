@@ -9,6 +9,7 @@ import (
 	inet "github.com/ipfs/go-ipfs/p2p/net"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
+	"gopkg.in/errgo.v1"
 )
 
 var log = eventlog.Logger("net/mux")
@@ -112,7 +113,7 @@ func (m *Mux) HandleSync(s inet.Stream) {
 
 	name, handler, err := m.ReadHeader(s)
 	if err != nil {
-		err = fmt.Errorf("protocol mux error: %s", err)
+		err = errgo.Notef(err, "protocol mux error: %s")
 		log.Event(ctx, "muxError", lgbl.Error(err))
 		s.Close()
 		return

@@ -2,7 +2,6 @@
 package merkledag
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -10,10 +9,11 @@ import (
 	blocks "github.com/ipfs/go-ipfs/blocks"
 	bserv "github.com/ipfs/go-ipfs/blockservice"
 	u "github.com/ipfs/go-ipfs/util"
+	"gopkg.in/errgo.v1"
 )
 
 var log = u.Logger("merkledag")
-var ErrNotFound = fmt.Errorf("merkledag: not found")
+var ErrNotFound = errgo.New("merkledag: not found")
 
 // DAGService is an IPFS Merkle DAG service.
 type DAGService interface {
@@ -44,7 +44,7 @@ type dagService struct {
 // Add adds a node to the dagService, storing the block in the BlockService
 func (n *dagService) Add(nd *Node) (u.Key, error) {
 	if n == nil { // FIXME remove this assertion. protect with constructor invariant
-		return "", fmt.Errorf("dagService is nil")
+		return "", errgo.New("dagService is nil")
 	}
 
 	d, err := nd.Encoded(false)
@@ -85,7 +85,7 @@ func (n *dagService) AddRecursive(nd *Node) error {
 // Get retrieves a node from the dagService, fetching the block in the BlockService
 func (n *dagService) Get(k u.Key) (*Node, error) {
 	if n == nil {
-		return nil, fmt.Errorf("dagService is nil")
+		return nil, errgo.New("dagService is nil")
 	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Minute)

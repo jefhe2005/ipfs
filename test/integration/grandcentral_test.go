@@ -2,7 +2,6 @@ package integrationtest
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"math"
 	"testing"
@@ -21,6 +20,7 @@ import (
 	ds2 "github.com/ipfs/go-ipfs/util/datastore2"
 	errors "github.com/ipfs/go-ipfs/util/debugerror"
 	testutil "github.com/ipfs/go-ipfs/util/testutil"
+	"gopkg.in/errgo.v1"
 )
 
 func TestSupernodeBootstrappedAddCat(t *testing.T) {
@@ -169,12 +169,12 @@ func RunSupernodePutRecordGetRecord(conf testutil.LatencyConfig) error {
 	note := []byte("a note from putter")
 
 	if err := putter.Routing.PutValue(ctx, k, note); err != nil {
-		return fmt.Errorf("failed to put value: %s", err)
+		return errgo.Notef(err, "failed to put value: %s")
 	}
 
 	received, err := getter.Routing.GetValue(ctx, k)
 	if err != nil {
-		return fmt.Errorf("failed to get value: %s", err)
+		return errgo.Notef(err, "failed to get value: %s")
 	}
 
 	if 0 != bytes.Compare(note, received) {

@@ -1,7 +1,7 @@
 package common
 
 import (
-	"fmt"
+	"gopkg.in/errgo.v1"
 	"strings"
 )
 
@@ -13,7 +13,7 @@ func MapGetKV(v map[string]interface{}, key string) (interface{}, error) {
 		cursor, ok = cursor.(map[string]interface{})[part]
 		if !ok {
 			sofar := strings.Join(parts[:i], ".")
-			return nil, fmt.Errorf("%s key has no attributes", sofar)
+			return nil, errgo.Newf("%s key has no attributes", sofar)
 		}
 	}
 	return cursor, nil
@@ -29,7 +29,7 @@ func MapSetKV(v map[string]interface{}, key string, value interface{}) error {
 		mcursor, ok = cursor.(map[string]interface{})
 		if !ok {
 			sofar := strings.Join(parts[:i], ".")
-			return fmt.Errorf("%s key is not a map", sofar)
+			return errgo.Newf("%s key is not a map", sofar)
 		}
 
 		// last part? set here

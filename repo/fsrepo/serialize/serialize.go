@@ -2,7 +2,6 @@ package fsrepo
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -11,6 +10,7 @@ import (
 	"github.com/ipfs/go-ipfs/repo/config"
 	"github.com/ipfs/go-ipfs/util"
 	"github.com/ipfs/go-ipfs/util/debugerror"
+	"gopkg.in/errgo.v1"
 )
 
 var log = util.Logger("fsrepo")
@@ -23,7 +23,7 @@ func ReadConfigFile(filename string, cfg interface{}) error {
 	}
 	defer f.Close()
 	if err := json.NewDecoder(f).Decode(cfg); err != nil {
-		return fmt.Errorf("Failure to decode config: %s", err)
+		return errgo.Notef(err, "Failure to decode config: %s")
 	}
 	return nil
 }

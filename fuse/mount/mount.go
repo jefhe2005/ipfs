@@ -3,6 +3,7 @@ package mount
 
 import (
 	"fmt"
+	"gopkg.in/errgo.v1"
 	"os/exec"
 	"runtime"
 	"time"
@@ -79,5 +80,5 @@ func ForceUnmountManyTimes(m Mount, attempts int) error {
 
 		<-time.After(time.Millisecond * 500)
 	}
-	return fmt.Errorf("Unmount %s failed after 10 seconds of trying.", m.MountPoint())
+	return errgo.Newf("Unmount %s failed after 10 seconds of trying.", m.MountPoint())
 }

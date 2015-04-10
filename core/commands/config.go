@@ -15,6 +15,7 @@ import (
 	config "github.com/ipfs/go-ipfs/repo/config"
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 	u "github.com/ipfs/go-ipfs/util"
+	"gopkg.in/errgo.v1"
 )
 
 type ConfigField struct {
@@ -206,7 +207,7 @@ can't be undone.
 func getConfig(r repo.Repo, key string) (*ConfigField, error) {
 	value, err := r.GetConfigKey(key)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get config value: %s", err)
+		return nil, errgo.Notef(err, "Failed to get config value: %s")
 	}
 	return &ConfigField{
 		Key:   key,
@@ -217,7 +218,7 @@ func getConfig(r repo.Repo, key string) (*ConfigField, error) {
 func setConfig(r repo.Repo, key string, value interface{}) (*ConfigField, error) {
 	err := r.SetConfigKey(key, value)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to set config value: %s", err)
+		return nil, errgo.Notef(err, "Failed to set config value: %s")
 	}
 	return getConfig(r, key)
 }

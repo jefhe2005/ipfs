@@ -1,10 +1,10 @@
 package merkledag
 
 import (
-	"fmt"
 	"sort"
 
 	mh "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multihash"
+	"gopkg.in/errgo.v1"
 
 	pb "github.com/ipfs/go-ipfs/merkledag/internal/pb"
 	u "github.com/ipfs/go-ipfs/util"
@@ -18,7 +18,7 @@ import (
 func (n *Node) Unmarshal(encoded []byte) error {
 	var pbn pb.PBNode
 	if err := pbn.Unmarshal(encoded); err != nil {
-		return fmt.Errorf("Unmarshal failed. %v", err)
+		return errgo.Notef(err, "Unmarshal failed. %v")
 	}
 
 	pbnl := pbn.GetLinks()
@@ -27,7 +27,7 @@ func (n *Node) Unmarshal(encoded []byte) error {
 		n.Links[i] = &Link{Name: l.GetName(), Size: l.GetTsize()}
 		h, err := mh.Cast(l.GetHash())
 		if err != nil {
-			return fmt.Errorf("Link hash is not valid multihash. %v", err)
+			return errgo.Notef(err, "Link hash is not valid multihash. %v")
 		}
 		n.Links[i].Hash = h
 	}
@@ -42,7 +42,7 @@ func (n *Node) Unmarshal(encoded []byte) error {
 func (n *Node) MarshalTo(encoded []byte) error {
 	pbn := n.getPBNode()
 	if _, err := pbn.MarshalTo(encoded); err != nil {
-		return fmt.Errorf("Marshal failed. %v", err)
+		return errgo.Notef(err, "Marshal failed. %v")
 	}
 	return nil
 }
@@ -53,7 +53,7 @@ func (n *Node) Marshal() ([]byte, error) {
 	pbn := n.getPBNode()
 	data, err := pbn.Marshal()
 	if err != nil {
-		return data, fmt.Errorf("Marshal failed. %v", err)
+		return data, errgo.Notef(err, "Marshal failed. %v")
 	}
 	return data, nil
 }
@@ -95,7 +95,7 @@ func Decoded(encoded []byte) (*Node, error) {
 	n := new(Node)
 	err := n.Unmarshal(encoded)
 	if err != nil {
-		return nil, fmt.Errorf("incorrectly formatted merkledag node: %s", err)
+		return nil, errgo.Notef(err, "incorrectly formatted merkledag node: %s")
 	}
 	return n, nil
 }

@@ -3,12 +3,12 @@ package namesys
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"time"
 
 	proto "github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
 	mh "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multihash"
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"gopkg.in/errgo.v1"
 
 	dag "github.com/ipfs/go-ipfs/merkledag"
 	pb "github.com/ipfs/go-ipfs/namesys/internal/pb"
@@ -47,7 +47,7 @@ func (p *ipnsPublisher) Publish(ctx context.Context, k ci.PrivKey, value u.Key) 
 	// validate `value` is a ref (multihash)
 	_, err := mh.FromB58String(value.Pretty())
 	if err != nil {
-		return fmt.Errorf("publish value must be str multihash. %v", err)
+		return errgo.Notef(err, "publish value must be str multihash. %v")
 	}
 
 	data, err := createRoutingEntryData(k, value)
@@ -104,7 +104,7 @@ func ipnsEntryDataForSig(e *pb.IpnsEntry) []byte {
 	return bytes.Join([][]byte{
 		e.Value,
 		e.Validity,
-		[]byte(fmt.Sprint(e.GetValidityType())),
+		[]byte(e.GetValidityType().String()),
 	},
 		[]byte{})
 }

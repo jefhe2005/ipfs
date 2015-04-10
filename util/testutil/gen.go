@@ -12,6 +12,7 @@ import (
 	ci "github.com/ipfs/go-ipfs/p2p/crypto"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	u "github.com/ipfs/go-ipfs/util"
+	"gopkg.in/errgo.v1"
 
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
 )
@@ -115,12 +116,12 @@ func (p *PeerNetParams) checkKeys() error {
 
 	sig, err := p.PrivKey.Sign(b)
 	if err != nil {
-		return fmt.Errorf("sig signing failed: %s", err)
+		return errgo.Notef(err, "sig signing failed: %s")
 	}
 
 	sigok, err := p.PubKey.Verify(b, sig)
 	if err != nil {
-		return fmt.Errorf("sig verify failed: %s", err)
+		return errgo.Notef(err, "sig verify failed: %s")
 	}
 	if !sigok {
 		return fmt.Errorf("sig verify failed: sig invalid!")

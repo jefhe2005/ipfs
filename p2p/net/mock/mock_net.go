@@ -1,7 +1,6 @@
 package mocknet
 
 import (
-	"fmt"
 	"sort"
 	"sync"
 
@@ -12,6 +11,7 @@ import (
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	p2putil "github.com/ipfs/go-ipfs/p2p/test/util"
 	testutil "github.com/ipfs/go-ipfs/util/testutil"
+	"gopkg.in/errgo.v1"
 
 	ctxgroup "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-ctxgroup"
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
@@ -169,11 +169,11 @@ func (mn *mocknet) LinkPeers(p1, p2 peer.ID) (Link, error) {
 	mn.RUnlock()
 
 	if n1 == nil {
-		return nil, fmt.Errorf("network for p1 not in mocknet")
+		return nil, errgo.New("network for p1 not in mocknet")
 	}
 
 	if n2 == nil {
-		return nil, fmt.Errorf("network for p2 not in mocknet")
+		return nil, errgo.New("network for p2 not in mocknet")
 	}
 
 	return mn.LinkNets(n1, n2)
@@ -184,11 +184,11 @@ func (mn *mocknet) validate(n inet.Network) (*peernet, error) {
 
 	nr, ok := n.(*peernet)
 	if !ok {
-		return nil, fmt.Errorf("Network not supported (use mock package nets only)")
+		return nil, errgo.New("Network not supported (use mock package nets only)")
 	}
 
 	if _, found := mn.nets[nr.peer]; !found {
-		return nil, fmt.Errorf("Network not on mocknet. is it from another mocknet?")
+		return nil, errgo.New("Network not on mocknet. is it from another mocknet?")
 	}
 
 	return nr, nil
@@ -218,7 +218,7 @@ func (mn *mocknet) Unlink(l2 Link) error {
 
 	l, ok := l2.(*link)
 	if !ok {
-		return fmt.Errorf("only links from mocknet are supported")
+		return errgo.New("only links from mocknet are supported")
 	}
 
 	mn.removeLink(l)
@@ -228,7 +228,7 @@ func (mn *mocknet) Unlink(l2 Link) error {
 func (mn *mocknet) UnlinkPeers(p1, p2 peer.ID) error {
 	ls := mn.LinksBetweenPeers(p1, p2)
 	if ls == nil {
-		return fmt.Errorf("no link between p1 and p2")
+		return errgo.New("no link between p1 and p2")
 	}
 
 	for _, l := range ls {

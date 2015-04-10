@@ -2,13 +2,13 @@ package redis
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/fzzy/radix/redis"
 	datastore "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
 	query "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/query"
+	"gopkg.in/errgo.v1"
 )
 
 var _ datastore.Datastore = &RedisDatastore{}
@@ -49,11 +49,11 @@ func (ds *RedisDatastore) Put(key datastore.Key, value interface{}) error {
 		ds.client.Append("EXPIRE", key.String(), ds.ttl.Seconds())
 	}
 	if err := ds.client.GetReply().Err; err != nil {
-		return fmt.Errorf("failed to put value: %s", err)
+		return errgo.Notef(err, "failed to put value: %s")
 	}
 	if ds.ttl != 0 {
 		if err := ds.client.GetReply().Err; err != nil {
-			return fmt.Errorf("failed to set expiration: %s", err)
+			return errgo.Notef(err, "failed to set expiration: %s")
 		}
 	}
 	return nil

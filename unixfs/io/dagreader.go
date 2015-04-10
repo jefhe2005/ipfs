@@ -3,7 +3,6 @@ package io
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 
@@ -12,6 +11,7 @@ import (
 	mdag "github.com/ipfs/go-ipfs/merkledag"
 	ft "github.com/ipfs/go-ipfs/unixfs"
 	ftpb "github.com/ipfs/go-ipfs/unixfs/pb"
+	"gopkg.in/errgo.v1"
 )
 
 var ErrIsDir = errors.New("this dag node is a directory")
@@ -115,7 +115,7 @@ func (dr *DagReader) precalcNextBuf(ctx context.Context) error {
 	pb := new(ftpb.Data)
 	err = proto.Unmarshal(nxt.Data, pb)
 	if err != nil {
-		return fmt.Errorf("incorrectly formatted protobuf: %s", err)
+		return errgo.Notef(err, "incorrectly formatted protobuf: %s")
 	}
 
 	switch pb.GetType() {

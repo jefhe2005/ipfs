@@ -20,6 +20,7 @@ import (
 	record "github.com/ipfs/go-ipfs/routing/record"
 	"github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	u "github.com/ipfs/go-ipfs/util"
+	"gopkg.in/errgo.v1"
 
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
 	ctxgroup "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-ctxgroup"
@@ -113,7 +114,7 @@ func (dht *IpfsDHT) Connect(ctx context.Context, npeer peer.ID) error {
 	// Ping new peer to register in their routing table
 	// NOTE: this should be done better...
 	if _, err := dht.Ping(ctx, npeer); err != nil {
-		return fmt.Errorf("failed to ping newly connected peer: %s", err)
+		return errgo.Notef(err, "failed to ping newly connected peer: %s")
 	}
 	log.Event(ctx, "connect", dht.self, npeer)
 	dht.Update(ctx, npeer)

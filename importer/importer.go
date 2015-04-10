@@ -3,7 +3,7 @@
 package importer
 
 import (
-	"fmt"
+	"gopkg.in/errgo.v1"
 	"io"
 	"os"
 
@@ -27,7 +27,7 @@ func BuildDagFromFile(fpath string, ds dag.DAGService, mp pin.ManualPinner) (*da
 	}
 
 	if stat.IsDir() {
-		return nil, fmt.Errorf("`%s` is a directory", fpath)
+		return nil, errgo.Newf("`%s` is a directory", fpath)
 	}
 
 	f, err := os.Open(fpath)

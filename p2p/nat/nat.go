@@ -3,6 +3,7 @@ package nat
 import (
 	"errors"
 	"fmt"
+	"gopkg.in/errgo.v1"
 	"strconv"
 	"strings"
 	"sync"
@@ -272,7 +273,7 @@ func (nat *NAT) NewMapping(maddr ma.Multiaddr) (Mapping, error) {
 
 	network, addr, err := manet.DialArgs(maddr)
 	if err != nil {
-		return nil, fmt.Errorf("DialArgs failed on addr:", maddr.String())
+		return nil, errgo.Newf("DialArgs failed on addr:", maddr.String())
 	}
 
 	switch network {
@@ -281,7 +282,7 @@ func (nat *NAT) NewMapping(maddr ma.Multiaddr) (Mapping, error) {
 	case "udp", "udp4", "udp6":
 		network = "udp"
 	default:
-		return nil, fmt.Errorf("transport not supported by NAT: %s", network)
+		return nil, errgo.Newf("transport not supported by NAT: %s", network)
 	}
 
 	intports := strings.Split(addr, ":")[1]

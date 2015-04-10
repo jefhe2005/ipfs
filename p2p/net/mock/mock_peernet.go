@@ -8,6 +8,7 @@ import (
 	ic "github.com/ipfs/go-ipfs/p2p/crypto"
 	inet "github.com/ipfs/go-ipfs/p2p/net"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
+	"gopkg.in/errgo.v1"
 
 	ctxgroup "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-ctxgroup"
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
@@ -343,7 +344,7 @@ func (pn *peernet) NewStream(p peer.ID) (inet.Stream, error) {
 	cs, found := pn.connsByPeer[p]
 	if !found || len(cs) < 1 {
 		pn.Unlock()
-		return nil, fmt.Errorf("no connection to peer")
+		return nil, errgo.New("no connection to peer")
 	}
 
 	// if many conns are found, how do we select? for now, randomly...

@@ -9,6 +9,7 @@ import (
 	config "github.com/ipfs/go-ipfs/repo/config"
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 	u "github.com/ipfs/go-ipfs/util"
+	"gopkg.in/errgo.v1"
 
 	semver "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/coreos/go-semver/semver"
 	update "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/inconshreveable/go-update"
@@ -113,7 +114,7 @@ func CheckForUpdate() (*check.Result, error) {
 
 	up, err := update.New().VerifySignatureWithPEM([]byte(updatePubKey))
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse public key: %v", err)
+		return nil, errgo.Notef(err, "Failed to parse public key: %v")
 	}
 
 	res, err := param.CheckForUpdate(updateEndpointURL, up)
@@ -139,7 +140,7 @@ func Apply(rel *check.Result) error {
 	}
 
 	if err, errRecover := rel.Update(); err != nil {
-		err = fmt.Errorf("Update failed: %v\n", err)
+		err = errgo.Notef(err, "Update failed: %v\n")
 		if errRecover != nil {
 			err = fmt.Errorf("%s\nRecovery failed! Cause: %v\nYou may need to recover manually", err, errRecover)
 		}
@@ -267,7 +268,7 @@ func CliCheckForUpdates(cfg *config.Config, repoPath string) error {
 func versionIsNewer(version string) (bool, error) {
 	nv, err := semver.NewVersion(version)
 	if err != nil {
-		return false, fmt.Errorf("could not parse version string: %s", err)
+		return false, errgo.Notef(err, "could not parse version string: %s")
 	}
 
 	cv := currentVersion

@@ -14,6 +14,7 @@ import (
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	u "github.com/ipfs/go-ipfs/util"
+	"gopkg.in/errgo.v1"
 )
 
 var log = eventlog.Logger("secio")
@@ -62,7 +63,7 @@ func newSecureSession(local peer.ID, key ci.PrivKey) (*secureSession, error) {
 	case s.localKey == nil:
 		return nil, errors.New("no local private key provided")
 	case !s.localPeer.MatchesPrivateKey(s.localKey):
-		return nil, fmt.Errorf("peer.ID does not match PrivateKey")
+		return nil, errgo.New("peer.ID does not match PrivateKey")
 	}
 
 	return s, nil
@@ -286,13 +287,13 @@ func (s *secureSession) handshake(ctx context.Context, insecure io.ReadWriter) e
 	// log.Debug("3.0 finish. sending: %v", proposeIn.GetRand())
 	// send their Nonce.
 	if _, err := s.secure.Write(proposeIn.GetRand()); err != nil {
-		return fmt.Errorf("Failed to write Finish nonce: %s", err)
+		return errgo.Notef(err, "Failed to write Finish nonce: %s")
 	}
 
 	// read our Nonce
 	nonceOut2 := make([]byte, len(nonceOut))
 	if _, err := io.ReadFull(s.secure, nonceOut2); err != nil {
-		return fmt.Errorf("Failed to read Finish nonce: %s", err)
+		return errgo.Notef(err, "Failed to read Finish nonce: %s")
 	}
 
 	// log.Debug("3.0 finish.\n\texpect: %v\n\tactual: %v", nonceOut, nonceOut2)

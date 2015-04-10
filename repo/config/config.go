@@ -4,12 +4,12 @@ package config
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	u "github.com/ipfs/go-ipfs/util"
+	"gopkg.in/errgo.v1"
 )
 
 var log = u.Logger("config")
@@ -89,7 +89,7 @@ func FromMap(v map[string]interface{}) (*Config, error) {
 	}
 	var conf Config
 	if err := json.NewDecoder(&buf).Decode(&conf); err != nil {
-		return nil, fmt.Errorf("Failure to decode config: %s", err)
+		return nil, errgo.Notef(err, "Failure to decode config: %s")
 	}
 	return &conf, nil
 }
@@ -101,7 +101,7 @@ func ToMap(conf *Config) (map[string]interface{}, error) {
 	}
 	var m map[string]interface{}
 	if err := json.NewDecoder(&buf).Decode(&m); err != nil {
-		return nil, fmt.Errorf("Failure to decode config: %s", err)
+		return nil, errgo.Notef(err, "Failure to decode config: %s")
 	}
 	return m, nil
 }

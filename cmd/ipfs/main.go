@@ -4,6 +4,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"gopkg.in/errgo.v1"
 	"io"
 	"math/rand"
 	"os"
@@ -379,7 +380,7 @@ func commandShouldRunOnDaemon(details cmdDetails, req cmds.Request, root *cmds.C
 	}
 
 	if details.cannotRunOnClient && details.cannotRunOnDaemon {
-		return false, fmt.Errorf("command disabled: %s", path[0])
+		return false, errgo.Newf("command disabled: %s", path[0])
 	}
 
 	if details.doesNotUseRepo && details.canRunOnClient() {
