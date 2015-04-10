@@ -139,7 +139,6 @@ func ValidateIpnsRecord(k u.Key, val []byte) error {
 
 // InitializeKeyspace sets the ipns record for the given key to
 // point to an empty directory.
-// TODO: this doesnt feel like it belongs here
 func InitializeKeyspace(ctx context.Context, ds dag.DAGService, pub Publisher, pins pin.Pinner, key ci.PrivKey) error {
 	emptyDir := &dag.Node{Data: ft.FolderPBData()}
 	nodek, err := ds.Add(emptyDir)
