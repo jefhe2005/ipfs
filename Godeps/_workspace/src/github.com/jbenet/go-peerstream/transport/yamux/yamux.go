@@ -71,10 +71,10 @@ type Transport yamux.Config
 
 // DefaultTransport has default settings for yamux
 var DefaultTransport = (*Transport)(&yamux.Config{
-	AcceptBacklog:       256,                // from yamux.DefaultConfig
-	EnableKeepAlive:     true,               // from yamux.DefaultConfig
-	KeepAliveInterval:   30 * time.Second,   // from yamux.DefaultConfig
-	MaxStreamWindowSize: uint32(256 * 1024), // from yamux.DefaultConfig
+	AcceptBacklog:       256,              // from yamux.DefaultConfig
+	EnableKeepAlive:     true,             // from yamux.DefaultConfig
+	KeepAliveInterval:   30 * time.Second, // from yamux.DefaultConfig
+	MaxStreamWindowSize: uint32(1024 * 1024),
 	LogOutput:           ioutil.Discard,
 })
 

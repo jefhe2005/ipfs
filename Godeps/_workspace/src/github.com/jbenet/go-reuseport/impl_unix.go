@@ -152,6 +152,12 @@ func dial(dialer net.Dialer, netw, addr string) (c net.Conn, err error) {
 			syscall.Close(fd)
 			return nil, err
 		}
+
+		if err = setBuffers(fd, 1024*1024); err != nil {
+			syscall.Close(fd)
+			return nil, err
+		}
+
 	}
 
 	// File Name get be nil
@@ -207,6 +213,11 @@ func listen(netw, addr string) (fd int, err error) {
 	if protocol == syscall.IPPROTO_TCP {
 		//  by default golang/net sets TCP no delay to true.
 		if err = setNoDelay(fd, true); err != nil {
+			syscall.Close(fd)
+			return -1, err
+		}
+
+		if err = setBuffers(fd, 1024*1024); err != nil {
 			syscall.Close(fd)
 			return -1, err
 		}

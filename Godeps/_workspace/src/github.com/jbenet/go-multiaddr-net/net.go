@@ -111,6 +111,17 @@ func (d *Dialer) Dial(remote ma.Multiaddr) (Conn, error) {
 		if err != nil {
 			return nil, err
 		}
+		tcpc, ok := nconn.(*net.TCPConn)
+		if ok {
+			err := tcpc.SetReadBuffer(1024 * 1024)
+			if err != nil {
+				return nil, err
+			}
+			err = tcpc.SetWriteBuffer(1024 * 1024)
+			if err != nil {
+				return nil, err
+			}
+		}
 	case "udp", "udp4", "udp6":
 		return nil, fmt.Errorf("utp is currently broken")
 

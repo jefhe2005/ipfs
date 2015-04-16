@@ -33,3 +33,16 @@ func setLinger(fd int, sec int) error {
 	}
 	return os.NewSyscallError("setsockopt", syscall.SetsockoptLinger(fd, syscall.SOL_SOCKET, syscall.SO_LINGER, &l))
 }
+
+func setBuffers(fd int, bufsize int) error {
+	err := syscall.SetsockoptInt(fd, syscall.IPPROTO_TCP, syscall.SO_RCVBUF, bufsize)
+	if err != nil {
+		return os.NewSyscallError("setsockopt", err)
+	}
+
+	err = syscall.SetsockoptInt(fd, syscall.IPPROTO_TCP, syscall.SO_SNDBUF, bufsize)
+	if err != nil {
+		return os.NewSyscallError("setsockopt", err)
+	}
+	return nil
+}
