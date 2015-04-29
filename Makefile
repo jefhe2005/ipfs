@@ -1,6 +1,6 @@
 
 ifeq ($(TEST_NO_FUSE),1)
-go_test=echo "-tags not supported by gb yet"
+go_test=echo "-tags not supported by gb yet" && exit 1 && gb test
 else
 go_test=gb test
 endif
