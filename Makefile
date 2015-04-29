@@ -1,8 +1,8 @@
 
 ifeq ($(TEST_NO_FUSE),1)
-go_test=go test -tags nofuse
+go_test=echo "-tags not supported by gb yet"
 else
-go_test=go test
+go_test=gb test
 endif
 
 ipfsCmdDir=./src/github.com/ipfs/go-ipfs/cmd/ipfs
@@ -19,7 +19,7 @@ gb:
 # -r flag rewrites import paths to use the vendored path
 # ./... performs operation on all packages in tree
 vendor: gb
-	godep save -r ./...
+	echo "TODO: need a new strategy here." && exit 1
 
 install:
 	cd ${ipfsCmdDir} && go install
