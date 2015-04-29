@@ -1,3 +1,7 @@
+# gb project dirs
+bin/
+pkg/
+
 # ipfs can generate profiling dump files
 *.cpuprof
 *.memprof
