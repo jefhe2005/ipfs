@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"time"
 
-	ctxgroup "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-ctxgroup"
+	ctxgroup "github.com/jbenet/go-ctxgroup"
 
 	u "github.com/ipfs/go-ipfs/util"
 )

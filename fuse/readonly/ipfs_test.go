@@ -12,7 +12,7 @@ import (
 	"sync"
 	"testing"
 
-	fstest "github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/fs/fstestutil"
+	fstest "bazil.org/fuse/fs/fstestutil"
 
 	core "github.com/ipfs/go-ipfs/core"
 	coreunix "github.com/ipfs/go-ipfs/core/coreunix"

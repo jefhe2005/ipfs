@@ -5,10 +5,10 @@ import (
 	"errors"
 	"time"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	ci "github.com/ipfs/go-ipfs/p2p/crypto"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	u "github.com/ipfs/go-ipfs/util"
+	context "golang.org/x/net/context"
 )
 
 // ErrNotFound is returned when a search fails to find anything

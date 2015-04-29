@@ -4,14 +4,14 @@ import (
 	"errors"
 	"fmt"
 
-	proto "github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
-	datastore "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	proto "code.google.com/p/goprotobuf/proto"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	dhtpb "github.com/ipfs/go-ipfs/routing/dht/pb"
 	record "github.com/ipfs/go-ipfs/routing/record"
 	proxy "github.com/ipfs/go-ipfs/routing/supernode/proxy"
 	util "github.com/ipfs/go-ipfs/util"
+	datastore "github.com/jbenet/go-datastore"
+	context "golang.org/x/net/context"
 )
 
 // Server handles routing queries using a database backend

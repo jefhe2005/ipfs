@@ -3,11 +3,11 @@ package namesys
 import (
 	"testing"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	path "github.com/ipfs/go-ipfs/path"
 	mockrouting "github.com/ipfs/go-ipfs/routing/mock"
 	u "github.com/ipfs/go-ipfs/util"
 	testutil "github.com/ipfs/go-ipfs/util/testutil"
+	context "golang.org/x/net/context"
 )
 
 func TestRoutingResolve(t *testing.T) {

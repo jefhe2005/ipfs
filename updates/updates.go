@@ -10,9 +10,9 @@ import (
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 	u "github.com/ipfs/go-ipfs/util"
 
-	semver "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/coreos/go-semver/semver"
-	update "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/inconshreveable/go-update"
-	check "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/inconshreveable/go-update/check"
+	semver "github.com/coreos/go-semver/semver"
+	update "github.com/inconshreveable/go-update"
+	check "github.com/inconshreveable/go-update/check"
 )
 
 const (

@@ -8,13 +8,13 @@ import (
 	"io"
 	"time"
 
-	b58 "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-base58"
-	ctxgroup "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-ctxgroup"
-	ds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	metrics "github.com/ipfs/go-ipfs/metrics"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
+	b58 "github.com/jbenet/go-base58"
+	ctxgroup "github.com/jbenet/go-ctxgroup"
+	ds "github.com/jbenet/go-datastore"
+	ma "github.com/jbenet/go-multiaddr"
+	context "golang.org/x/net/context"
 
 	diag "github.com/ipfs/go-ipfs/diagnostics"
 	ic "github.com/ipfs/go-ipfs/p2p/crypto"

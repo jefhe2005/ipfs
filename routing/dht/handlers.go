@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	proto "github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
-	ds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	proto "code.google.com/p/goprotobuf/proto"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	pb "github.com/ipfs/go-ipfs/routing/dht/pb"
 	u "github.com/ipfs/go-ipfs/util"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
+	ds "github.com/jbenet/go-datastore"
+	context "golang.org/x/net/context"
 )
 
 // The number of closer peers to send on requests.

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/miekg/dns"
+	"github.com/miekg/dns"
 )
 
 const (

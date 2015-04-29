@@ -12,9 +12,9 @@ import (
 	pset "github.com/ipfs/go-ipfs/util/peerset"
 	todoctr "github.com/ipfs/go-ipfs/util/todocounter"
 
-	process "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess"
-	ctxproc "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess/context"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	process "github.com/jbenet/goprocess"
+	ctxproc "github.com/jbenet/goprocess/context"
+	context "golang.org/x/net/context"
 )
 
 var maxQueryConcurrency = AlphaValue

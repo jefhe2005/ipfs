@@ -14,11 +14,11 @@ import (
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
 
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	manet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net"
-	process "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess"
-	ratelimit "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess/ratelimit"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	ma "github.com/jbenet/go-multiaddr"
+	manet "github.com/jbenet/go-multiaddr-net"
+	process "github.com/jbenet/goprocess"
+	ratelimit "github.com/jbenet/goprocess/ratelimit"
+	context "golang.org/x/net/context"
 )
 
 // Diagram of dial sync:

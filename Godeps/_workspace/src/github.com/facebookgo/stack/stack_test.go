@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/facebookgo/stack"
+	"github.com/facebookgo/stack"
 )
 
 func indirect1() stack.Stack {

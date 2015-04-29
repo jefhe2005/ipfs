@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	ds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	dssync "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/sync"
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	ds "github.com/jbenet/go-datastore"
+	dssync "github.com/jbenet/go-datastore/sync"
+	ma "github.com/jbenet/go-multiaddr"
+	context "golang.org/x/net/context"
 
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	netutil "github.com/ipfs/go-ipfs/p2p/test/util"

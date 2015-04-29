@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
-	proto "github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
-	mh "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multihash"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	proto "code.google.com/p/goprotobuf/proto"
+	mh "github.com/jbenet/go-multihash"
+	context "golang.org/x/net/context"
 
 	chunk "github.com/ipfs/go-ipfs/importer/chunk"
 	help "github.com/ipfs/go-ipfs/importer/helpers"

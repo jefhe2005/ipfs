@@ -1,10 +1,10 @@
 package blockstore
 
 import (
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/hashicorp/golang-lru"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/hashicorp/golang-lru"
 	"github.com/ipfs/go-ipfs/blocks"
 	u "github.com/ipfs/go-ipfs/util"
+	context "golang.org/x/net/context"
 )
 
 // WriteCached returns a blockstore that caches up to |size| unique writes (bs.Put).

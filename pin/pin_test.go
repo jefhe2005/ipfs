@@ -4,15 +4,15 @@ import (
 	"testing"
 	"time"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	context "golang.org/x/net/context"
 
-	ds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	dssync "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/sync"
 	"github.com/ipfs/go-ipfs/blocks/blockstore"
 	bs "github.com/ipfs/go-ipfs/blockservice"
 	"github.com/ipfs/go-ipfs/exchange/offline"
 	mdag "github.com/ipfs/go-ipfs/merkledag"
 	"github.com/ipfs/go-ipfs/util"
+	ds "github.com/jbenet/go-datastore"
+	dssync "github.com/jbenet/go-datastore/sync"
 )
 
 func randNode() (*mdag.Node, util.Key) {

@@ -3,8 +3,7 @@ package proxy
 import (
 	"errors"
 
-	ggio "github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/gogoprotobuf/io"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	ggio "code.google.com/p/gogoprotobuf/io"
 	host "github.com/ipfs/go-ipfs/p2p/host"
 	inet "github.com/ipfs/go-ipfs/p2p/net"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
@@ -12,6 +11,7 @@ import (
 	kbucket "github.com/ipfs/go-ipfs/routing/kbucket"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	"github.com/ipfs/go-ipfs/util"
+	context "golang.org/x/net/context"
 )
 
 const ProtocolSNR = "/ipfs/supernoderouting"

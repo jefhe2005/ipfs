@@ -12,13 +12,13 @@ import (
 	"sync"
 	"testing"
 
-	fstest "github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/fs/fstestutil"
-	racedet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-detect-race"
+	fstest "bazil.org/fuse/fs/fstestutil"
+	racedet "github.com/jbenet/go-detect-race"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	core "github.com/ipfs/go-ipfs/core"
 	nsfs "github.com/ipfs/go-ipfs/ipnsfs"
 	ci "github.com/ipfs/go-ipfs/util/testutil/ci"
+	context "golang.org/x/net/context"
 )
 
 func maybeSkipFuseTests(t *testing.T) {

@@ -14,13 +14,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/fs"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/fs/fstestutil"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/fs/fstestutil/record"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/fuseutil"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/syscallx"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"bazil.org/fuse"
+	"bazil.org/fuse/fs"
+	"bazil.org/fuse/fs/fstestutil"
+	"bazil.org/fuse/fs/fstestutil/record"
+	"bazil.org/fuse/fuseutil"
+	"bazil.org/fuse/syscallx"
+	"golang.org/x/net/context"
 )
 
 // TO TEST:

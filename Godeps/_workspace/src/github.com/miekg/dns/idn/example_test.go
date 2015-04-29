@@ -2,7 +2,7 @@ package idn_test
 
 import (
 	"fmt"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/miekg/dns/idn"
+	"github.com/miekg/dns/idn"
 )
 
 func ExampleToPunycode() {

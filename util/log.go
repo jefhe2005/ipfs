@@ -3,7 +3,7 @@ package util
 import (
 	"os"
 
-	logging "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/whyrusleeping/go-logging"
+	logging "github.com/whyrusleeping/go-logging"
 )
 
 func init() {

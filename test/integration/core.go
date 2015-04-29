@@ -1,9 +1,6 @@
 package integrationtest
 
 import (
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	syncds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/sync"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	blockstore "github.com/ipfs/go-ipfs/blocks/blockstore"
 	core "github.com/ipfs/go-ipfs/core"
 	bitswap "github.com/ipfs/go-ipfs/exchange/bitswap"
@@ -15,6 +12,9 @@ import (
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	ds2 "github.com/ipfs/go-ipfs/util/datastore2"
 	testutil "github.com/ipfs/go-ipfs/util/testutil"
+	"github.com/jbenet/go-datastore"
+	syncds "github.com/jbenet/go-datastore/sync"
+	context "golang.org/x/net/context"
 )
 
 var log = eventlog.Logger("epictest")

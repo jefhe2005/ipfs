@@ -1,9 +1,9 @@
 package queue
 
 import (
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
+	context "golang.org/x/net/context"
 )
 
 var log = eventlog.Logger("peerqueue")

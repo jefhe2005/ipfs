@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/facebookgo/stackerr"
+	"github.com/facebookgo/stackerr"
 	"github.com/ipfs/go-ipfs/util"
 )
 

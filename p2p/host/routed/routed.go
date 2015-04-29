@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
+	ma "github.com/jbenet/go-multiaddr"
+	context "golang.org/x/net/context"
 
 	metrics "github.com/ipfs/go-ipfs/metrics"
 	host "github.com/ipfs/go-ipfs/p2p/host"

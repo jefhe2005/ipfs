@@ -7,7 +7,7 @@ import (
 	"io"
 	"time"
 
-	humanize "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/dustin/go-humanize"
+	humanize "github.com/dustin/go-humanize"
 
 	cmds "github.com/ipfs/go-ipfs/commands"
 	metrics "github.com/ipfs/go-ipfs/metrics"

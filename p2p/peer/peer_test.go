@@ -11,7 +11,7 @@ import (
 	u "github.com/ipfs/go-ipfs/util"
 	tu "github.com/ipfs/go-ipfs/util/testutil"
 
-	b58 "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-base58"
+	b58 "github.com/jbenet/go-base58"
 )
 
 var gen1 keyset // generated

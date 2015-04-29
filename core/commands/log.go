@@ -8,7 +8,7 @@ import (
 	cmds "github.com/ipfs/go-ipfs/commands"
 	u "github.com/ipfs/go-ipfs/util"
 
-	tail "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/ActiveState/tail"
+	tail "github.com/ActiveState/tail"
 )
 
 // Golang os.Args overrides * and replaces the character argument with

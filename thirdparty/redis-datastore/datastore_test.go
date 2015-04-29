@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/fzzy/radix/redis"
-	datastore "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
+	"github.com/fzzy/radix/redis"
 	"github.com/ipfs/go-ipfs/thirdparty/assert"
+	datastore "github.com/jbenet/go-datastore"
 )
 
 const RedisEnv = "REDIS_DATASTORE_TEST_HOST"

@@ -10,7 +10,7 @@ import (
 	testutil "github.com/ipfs/go-ipfs/p2p/test/util"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	context "golang.org/x/net/context"
 )
 
 var log = eventlog.Logger("relay_test")

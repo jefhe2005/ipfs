@@ -3,7 +3,7 @@ package ctxutil
 import (
 	"io"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	context "golang.org/x/net/context"
 )
 
 type ioret struct {

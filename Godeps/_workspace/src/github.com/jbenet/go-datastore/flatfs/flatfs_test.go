@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/flatfs"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/query"
+	"github.com/jbenet/go-datastore"
+	"github.com/jbenet/go-datastore/flatfs"
+	"github.com/jbenet/go-datastore/query"
 )
 
 func tempdir(t testing.TB) (path string, cleanup func()) {

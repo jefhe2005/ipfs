@@ -5,9 +5,9 @@ import (
 
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	manet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	ma "github.com/jbenet/go-multiaddr"
+	manet "github.com/jbenet/go-multiaddr-net"
+	context "golang.org/x/net/context"
 )
 
 var log = eventlog.Logger("p2p/net/swarm/addr")

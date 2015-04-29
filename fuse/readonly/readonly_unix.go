@@ -7,10 +7,9 @@ import (
 	"io"
 	"os"
 
-	fuse "github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse"
-	fs "github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/fs"
-	proto "github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	fuse "bazil.org/fuse"
+	fs "bazil.org/fuse/fs"
+	proto "code.google.com/p/goprotobuf/proto"
 	core "github.com/ipfs/go-ipfs/core"
 	mdag "github.com/ipfs/go-ipfs/merkledag"
 	path "github.com/ipfs/go-ipfs/path"
@@ -18,6 +17,7 @@ import (
 	uio "github.com/ipfs/go-ipfs/unixfs/io"
 	ftpb "github.com/ipfs/go-ipfs/unixfs/pb"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
+	"golang.org/x/net/context"
 )
 
 var log = eventlog.Logger("fuse/ipfs")

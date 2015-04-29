@@ -13,9 +13,9 @@ import (
 	p2putil "github.com/ipfs/go-ipfs/p2p/test/util"
 	testutil "github.com/ipfs/go-ipfs/util/testutil"
 
-	ctxgroup "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-ctxgroup"
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	ctxgroup "github.com/jbenet/go-ctxgroup"
+	ma "github.com/jbenet/go-multiaddr"
+	context "golang.org/x/net/context"
 )
 
 // mocknet implements mocknet.Mocknet

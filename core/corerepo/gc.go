@@ -1,9 +1,9 @@
 package corerepo
 
 import (
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/ipfs/go-ipfs/core"
 	u "github.com/ipfs/go-ipfs/util"
+	context "golang.org/x/net/context"
 
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 )

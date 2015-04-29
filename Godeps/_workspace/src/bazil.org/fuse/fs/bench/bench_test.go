@@ -7,10 +7,10 @@ import (
 	"path"
 	"testing"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/fs"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/fs/fstestutil"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"bazil.org/fuse"
+	"bazil.org/fuse/fs"
+	"bazil.org/fuse/fs/fstestutil"
+	"golang.org/x/net/context"
 )
 
 type benchConfig struct {

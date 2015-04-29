@@ -2,8 +2,8 @@
 package inflect
 
 import (
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/chuckpreslar/inflect/languages"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/chuckpreslar/inflect/types"
+	"github.com/chuckpreslar/inflect/languages"
+	"github.com/chuckpreslar/inflect/types"
 )
 
 var (

@@ -11,7 +11,7 @@ import (
 	"os"
 	"unsafe"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/go.net/internal/iana"
+	"code.google.com/p/go.net/internal/iana"
 )
 
 func getsockoptIPMreqn(fd, name int) (*net.Interface, error) {

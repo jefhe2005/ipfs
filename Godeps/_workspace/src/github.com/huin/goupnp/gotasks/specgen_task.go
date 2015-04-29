@@ -17,9 +17,9 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/huin/goupnp"
+	"github.com/huin/goupnp/scpd"
 	"github.com/huin/goutil/codegen"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/huin/goupnp"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/huin/goupnp/scpd"
 	"github.com/jingweno/gotask/tasking"
 )
 

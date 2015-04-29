@@ -6,9 +6,9 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/keytransform"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/query"
+	"github.com/jbenet/go-datastore"
+	"github.com/jbenet/go-datastore/keytransform"
+	"github.com/jbenet/go-datastore/query"
 )
 
 var (

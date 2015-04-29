@@ -3,14 +3,14 @@ package corerouting
 import (
 	"errors"
 
-	ds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	core "github.com/ipfs/go-ipfs/core"
 	"github.com/ipfs/go-ipfs/p2p/host"
 	"github.com/ipfs/go-ipfs/p2p/peer"
 	routing "github.com/ipfs/go-ipfs/routing"
 	supernode "github.com/ipfs/go-ipfs/routing/supernode"
 	gcproxy "github.com/ipfs/go-ipfs/routing/supernode/proxy"
+	ds "github.com/jbenet/go-datastore"
+	context "golang.org/x/net/context"
 )
 
 // NB: DHT option is included in the core to avoid 1) because it's a sane

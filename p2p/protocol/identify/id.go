@@ -4,10 +4,10 @@ import (
 	"strings"
 	"sync"
 
-	ggio "github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/gogoprotobuf/io"
-	semver "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/coreos/go-semver/semver"
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	ggio "code.google.com/p/gogoprotobuf/io"
+	semver "github.com/coreos/go-semver/semver"
+	ma "github.com/jbenet/go-multiaddr"
+	context "golang.org/x/net/context"
 
 	mstream "github.com/ipfs/go-ipfs/metrics/stream"
 	host "github.com/ipfs/go-ipfs/p2p/host"

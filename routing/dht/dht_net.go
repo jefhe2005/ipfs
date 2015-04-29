@@ -9,8 +9,8 @@ import (
 	pb "github.com/ipfs/go-ipfs/routing/dht/pb"
 	ctxutil "github.com/ipfs/go-ipfs/util/ctx"
 
-	ggio "github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/gogoprotobuf/io"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	ggio "code.google.com/p/gogoprotobuf/io"
+	context "golang.org/x/net/context"
 )
 
 // handleNewStream implements the inet.StreamHandler

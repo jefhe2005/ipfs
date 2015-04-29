@@ -12,14 +12,14 @@ import (
 
 	"crypto/rand"
 
-	ggio "github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/gogoprotobuf/io"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	ggio "code.google.com/p/gogoprotobuf/io"
+	"code.google.com/p/goprotobuf/proto"
 	host "github.com/ipfs/go-ipfs/p2p/host"
 	inet "github.com/ipfs/go-ipfs/p2p/net"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	protocol "github.com/ipfs/go-ipfs/p2p/protocol"
 	ctxutil "github.com/ipfs/go-ipfs/util/ctx"
+	context "golang.org/x/net/context"
 
 	pb "github.com/ipfs/go-ipfs/diagnostics/internal/pb"
 	util "github.com/ipfs/go-ipfs/util"

@@ -4,7 +4,6 @@ import (
 	"sync"
 	"time"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	notif "github.com/ipfs/go-ipfs/notifications"
 	inet "github.com/ipfs/go-ipfs/p2p/net"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
@@ -14,6 +13,7 @@ import (
 	record "github.com/ipfs/go-ipfs/routing/record"
 	u "github.com/ipfs/go-ipfs/util"
 	pset "github.com/ipfs/go-ipfs/util/peerset"
+	context "golang.org/x/net/context"
 )
 
 // asyncQueryBuffer is the size of buffered channels in async queries. This

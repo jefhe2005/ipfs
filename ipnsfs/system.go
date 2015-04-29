@@ -25,8 +25,8 @@ import (
 	ft "github.com/ipfs/go-ipfs/unixfs"
 	u "github.com/ipfs/go-ipfs/util"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
+	context "golang.org/x/net/context"
 )
 
 var log = eventlog.Logger("ipnsfs")

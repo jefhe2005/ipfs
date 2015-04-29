@@ -37,7 +37,7 @@ import (
 	"testing"
 
 	. "./testdata"
-	. "github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/gogoprotobuf/proto"
+	. "code.google.com/p/gogoprotobuf/proto"
 )
 
 type UnmarshalTextTest struct {

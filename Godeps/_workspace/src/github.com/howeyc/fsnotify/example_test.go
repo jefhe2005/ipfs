@@ -7,7 +7,7 @@ package fsnotify_test
 import (
 	"log"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/howeyc/fsnotify"
+	"github.com/howeyc/fsnotify"
 )
 
 func ExampleNewWatcher() {

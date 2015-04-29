@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/hashicorp/mdns"
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	manet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net"
+	"github.com/hashicorp/mdns"
+	ma "github.com/jbenet/go-multiaddr"
+	manet "github.com/jbenet/go-multiaddr-net"
 
 	"github.com/ipfs/go-ipfs/p2p/host"
 	"github.com/ipfs/go-ipfs/p2p/peer"

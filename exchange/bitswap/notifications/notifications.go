@@ -1,10 +1,10 @@
 package notifications
 
 import (
-	pubsub "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/briantigerchow/pubsub"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	pubsub "github.com/briantigerchow/pubsub"
 	blocks "github.com/ipfs/go-ipfs/blocks"
 	u "github.com/ipfs/go-ipfs/util"
+	context "golang.org/x/net/context"
 )
 
 const bufferSize = 16

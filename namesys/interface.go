@@ -4,9 +4,9 @@ package namesys
 import (
 	"errors"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	ci "github.com/ipfs/go-ipfs/p2p/crypto"
 	path "github.com/ipfs/go-ipfs/path"
+	context "golang.org/x/net/context"
 )
 
 // ErrResolveFailed signals an error when attempting to resolve.

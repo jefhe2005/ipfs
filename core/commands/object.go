@@ -10,7 +10,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	mh "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multihash"
+	mh "github.com/jbenet/go-multihash"
 
 	cmds "github.com/ipfs/go-ipfs/commands"
 	core "github.com/ipfs/go-ipfs/core"

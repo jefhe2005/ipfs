@@ -6,12 +6,12 @@ import (
 	"io/ioutil"
 	"testing"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	chunk "github.com/ipfs/go-ipfs/importer/chunk"
 	dag "github.com/ipfs/go-ipfs/merkledag"
 	mdtest "github.com/ipfs/go-ipfs/merkledag/test"
 	uio "github.com/ipfs/go-ipfs/unixfs/io"
 	u "github.com/ipfs/go-ipfs/util"
+	context "golang.org/x/net/context"
 )
 
 func getBalancedDag(t testing.TB, size int64, blksize int) (*dag.Node, dag.DAGService) {

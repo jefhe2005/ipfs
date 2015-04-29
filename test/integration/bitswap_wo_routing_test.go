@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/ipfs/go-ipfs/blocks"
 	"github.com/ipfs/go-ipfs/core"
 	mocknet "github.com/ipfs/go-ipfs/p2p/net/mock"
 	errors "github.com/ipfs/go-ipfs/util/debugerror"
 	testutil "github.com/ipfs/go-ipfs/util/testutil"
+	context "golang.org/x/net/context"
 )
 
 func TestBitswapWithoutRouting(t *testing.T) {

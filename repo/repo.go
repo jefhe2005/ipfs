@@ -3,8 +3,8 @@ package repo
 import (
 	"io"
 
-	datastore "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
 	config "github.com/ipfs/go-ipfs/repo/config"
+	datastore "github.com/jbenet/go-datastore"
 )
 
 type Repo interface {

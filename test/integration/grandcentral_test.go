@@ -7,9 +7,6 @@ import (
 	"math"
 	"testing"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	syncds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/sync"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	core "github.com/ipfs/go-ipfs/core"
 	"github.com/ipfs/go-ipfs/core/corerouting"
 	"github.com/ipfs/go-ipfs/core/coreunix"
@@ -21,6 +18,9 @@ import (
 	ds2 "github.com/ipfs/go-ipfs/util/datastore2"
 	errors "github.com/ipfs/go-ipfs/util/debugerror"
 	testutil "github.com/ipfs/go-ipfs/util/testutil"
+	"github.com/jbenet/go-datastore"
+	syncds "github.com/jbenet/go-datastore/sync"
+	context "golang.org/x/net/context"
 )
 
 func TestSupernodeBootstrappedAddCat(t *testing.T) {

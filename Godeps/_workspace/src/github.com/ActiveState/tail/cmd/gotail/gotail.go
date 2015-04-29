@@ -5,7 +5,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/ActiveState/tail"
+	"github.com/ActiveState/tail"
 	"os"
 )
 

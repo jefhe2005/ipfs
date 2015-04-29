@@ -4,11 +4,11 @@ import (
 	"testing"
 	"time"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	delay "github.com/ipfs/go-ipfs/thirdparty/delay"
 	u "github.com/ipfs/go-ipfs/util"
 	"github.com/ipfs/go-ipfs/util/testutil"
+	context "golang.org/x/net/context"
 )
 
 func TestKeyNotFound(t *testing.T) {

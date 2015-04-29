@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	cmds "github.com/ipfs/go-ipfs/commands"
 	u "github.com/ipfs/go-ipfs/util"
+	context "golang.org/x/net/context"
 )
 
 var log = u.Logger("commands/http")

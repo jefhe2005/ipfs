@@ -8,7 +8,7 @@ import (
 	"io"
 	"strings"
 
-	b58 "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-base58"
+	b58 "github.com/jbenet/go-base58"
 
 	cmds "github.com/ipfs/go-ipfs/commands"
 	core "github.com/ipfs/go-ipfs/core"

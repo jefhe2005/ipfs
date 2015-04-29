@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/facebookgo/stackerr"
+	"github.com/facebookgo/stackerr"
 )
 
 func TestNew(t *testing.T) {

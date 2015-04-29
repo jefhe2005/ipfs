@@ -8,9 +8,6 @@ import (
 	"sync"
 	"testing"
 
-	ds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	dssync "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/sync"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	bstore "github.com/ipfs/go-ipfs/blocks/blockstore"
 	blockservice "github.com/ipfs/go-ipfs/blockservice"
 	bserv "github.com/ipfs/go-ipfs/blockservice"
@@ -21,6 +18,9 @@ import (
 	"github.com/ipfs/go-ipfs/pin"
 	uio "github.com/ipfs/go-ipfs/unixfs/io"
 	u "github.com/ipfs/go-ipfs/util"
+	ds "github.com/jbenet/go-datastore"
+	dssync "github.com/jbenet/go-datastore/sync"
+	"golang.org/x/net/context"
 )
 
 type dagservAndPinner struct {

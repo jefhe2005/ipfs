@@ -4,9 +4,9 @@ package watch
 
 import (
 	"fmt"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/ActiveState/tail/util"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/howeyc/fsnotify"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/tomb.v1"
+	"github.com/ActiveState/tail/util"
+	"github.com/howeyc/fsnotify"
+	"gopkg.in/tomb.v1"
 	"os"
 	"path/filepath"
 )

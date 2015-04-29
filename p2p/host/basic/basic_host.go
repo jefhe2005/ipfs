@@ -3,12 +3,12 @@ package basichost
 import (
 	"io"
 
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	goprocess "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	metrics "github.com/ipfs/go-ipfs/metrics"
 	mstream "github.com/ipfs/go-ipfs/metrics/stream"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
+	ma "github.com/jbenet/go-multiaddr"
+	goprocess "github.com/jbenet/goprocess"
+	context "golang.org/x/net/context"
 
 	inet "github.com/ipfs/go-ipfs/p2p/net"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"

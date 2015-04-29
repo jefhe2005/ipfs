@@ -7,12 +7,12 @@ import (
 	"errors"
 	"fmt"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	blocks "github.com/ipfs/go-ipfs/blocks"
 	"github.com/ipfs/go-ipfs/blocks/blockstore"
 	worker "github.com/ipfs/go-ipfs/blockservice/worker"
 	exchange "github.com/ipfs/go-ipfs/exchange"
 	u "github.com/ipfs/go-ipfs/util"
+	context "golang.org/x/net/context"
 )
 
 var wc = worker.Config{

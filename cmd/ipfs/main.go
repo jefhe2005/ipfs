@@ -15,10 +15,9 @@ import (
 	"syscall"
 	"time"
 
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	manet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net"
+	ma "github.com/jbenet/go-multiaddr"
+	manet "github.com/jbenet/go-multiaddr-net"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	cmds "github.com/ipfs/go-ipfs/commands"
 	cmdsCli "github.com/ipfs/go-ipfs/commands/cli"
 	cmdsHttp "github.com/ipfs/go-ipfs/commands/http"
@@ -27,6 +26,7 @@ import (
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	u "github.com/ipfs/go-ipfs/util"
+	context "golang.org/x/net/context"
 )
 
 // log is the command logger

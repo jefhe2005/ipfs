@@ -3,7 +3,7 @@
 package watch
 
 import (
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/tomb.v1"
+	"gopkg.in/tomb.v1"
 	"os"
 )
 

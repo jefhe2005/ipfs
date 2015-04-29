@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"golang.org/x/net/context"
 )
 
 func TestDoReturnsContextErr(t *testing.T) {

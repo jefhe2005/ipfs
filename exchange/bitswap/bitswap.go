@@ -8,8 +8,6 @@ import (
 	"sync"
 	"time"
 
-	process "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	blocks "github.com/ipfs/go-ipfs/blocks"
 	blockstore "github.com/ipfs/go-ipfs/blocks/blockstore"
 	exchange "github.com/ipfs/go-ipfs/exchange"
@@ -23,6 +21,8 @@ import (
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	u "github.com/ipfs/go-ipfs/util"
 	pset "github.com/ipfs/go-ipfs/util/peerset" // TODO move this to peerstore
+	process "github.com/jbenet/goprocess"
+	context "golang.org/x/net/context"
 )
 
 var log = eventlog.Logger("bitswap")

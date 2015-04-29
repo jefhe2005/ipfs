@@ -9,11 +9,11 @@ import (
 	addrutil "github.com/ipfs/go-ipfs/p2p/net/swarm/addr"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
 
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	manet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net"
-	ps "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	multierr "github.com/ipfs/go-ipfs/thirdparty/multierr"
+	ma "github.com/jbenet/go-multiaddr"
+	manet "github.com/jbenet/go-multiaddr-net"
+	ps "github.com/jbenet/go-peerstream"
+	context "golang.org/x/net/context"
 )
 
 // Open listeners for each network the swarm should listen on

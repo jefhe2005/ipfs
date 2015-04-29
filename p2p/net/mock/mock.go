@@ -3,7 +3,7 @@ package mocknet
 import (
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	context "golang.org/x/net/context"
 )
 
 var log = eventlog.Logger("mocknet")

@@ -3,10 +3,10 @@ package core
 import (
 	"testing"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/ipfs/go-ipfs/repo"
 	config "github.com/ipfs/go-ipfs/repo/config"
 	"github.com/ipfs/go-ipfs/util/testutil"
+	context "golang.org/x/net/context"
 )
 
 func TestInitialization(t *testing.T) {

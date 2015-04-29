@@ -39,7 +39,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
+	"code.google.com/p/goprotobuf/proto"
 
 	pb "./testdata"
 )

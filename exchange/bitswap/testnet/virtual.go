@@ -3,7 +3,6 @@ package bitswap
 import (
 	"errors"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	bsmsg "github.com/ipfs/go-ipfs/exchange/bitswap/message"
 	bsnet "github.com/ipfs/go-ipfs/exchange/bitswap/network"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
@@ -12,6 +11,7 @@ import (
 	delay "github.com/ipfs/go-ipfs/thirdparty/delay"
 	util "github.com/ipfs/go-ipfs/util"
 	testutil "github.com/ipfs/go-ipfs/util/testutil"
+	context "golang.org/x/net/context"
 )
 
 func VirtualNetwork(rs mockrouting.Server, d delay.D) Network {

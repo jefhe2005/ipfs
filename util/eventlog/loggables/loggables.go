@@ -9,7 +9,7 @@ package loggables
 import (
 	"net"
 
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
+	ma "github.com/jbenet/go-multiaddr"
 
 	log "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 

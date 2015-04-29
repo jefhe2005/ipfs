@@ -7,8 +7,8 @@ import (
 
 	u "github.com/ipfs/go-ipfs/util"
 
-	b58 "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-base58"
-	mh "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multihash"
+	b58 "github.com/jbenet/go-base58"
+	mh "github.com/jbenet/go-multihash"
 )
 
 // ErrBadPath is returned when a given path is incorrectly formatted

@@ -4,9 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
-	ds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"code.google.com/p/goprotobuf/proto"
 	ci "github.com/ipfs/go-ipfs/p2p/crypto"
 	"github.com/ipfs/go-ipfs/p2p/peer"
 	routing "github.com/ipfs/go-ipfs/routing"
@@ -14,6 +12,8 @@ import (
 	record "github.com/ipfs/go-ipfs/routing/record"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	u "github.com/ipfs/go-ipfs/util"
+	ds "github.com/jbenet/go-datastore"
+	context "golang.org/x/net/context"
 )
 
 var log = eventlog.Logger("offlinerouting")

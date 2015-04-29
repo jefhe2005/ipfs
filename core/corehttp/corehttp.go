@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"time"
 
-	manners "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/braintree/manners"
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	manet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net"
+	manners "github.com/braintree/manners"
 	core "github.com/ipfs/go-ipfs/core"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
+	ma "github.com/jbenet/go-multiaddr"
+	manet "github.com/jbenet/go-multiaddr-net"
 )
 
 var log = eventlog.Logger("core/server")

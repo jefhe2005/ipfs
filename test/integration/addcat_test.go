@@ -9,8 +9,6 @@ import (
 	"testing"
 	"time"
 
-	random "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-random"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/ipfs/go-ipfs/core"
 	coreunix "github.com/ipfs/go-ipfs/core/coreunix"
 	mocknet "github.com/ipfs/go-ipfs/p2p/net/mock"
@@ -18,6 +16,8 @@ import (
 	"github.com/ipfs/go-ipfs/thirdparty/unit"
 	errors "github.com/ipfs/go-ipfs/util/debugerror"
 	testutil "github.com/ipfs/go-ipfs/util/testutil"
+	random "github.com/jbenet/go-random"
+	context "golang.org/x/net/context"
 )
 
 const kSeed = 1

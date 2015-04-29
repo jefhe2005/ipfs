@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	gm "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/whyrusleeping/go-metrics"
+	gm "github.com/whyrusleeping/go-metrics"
 	"sync"
 
 	peer "github.com/ipfs/go-ipfs/p2p/peer"

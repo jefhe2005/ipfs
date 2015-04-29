@@ -3,9 +3,9 @@ package namesys
 import (
 	"errors"
 
-	proquint "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/bren2010/proquint"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	proquint "github.com/bren2010/proquint"
 	path "github.com/ipfs/go-ipfs/path"
+	context "golang.org/x/net/context"
 )
 
 type ProquintResolver struct{}

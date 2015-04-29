@@ -9,10 +9,10 @@ import (
 	"os"
 	"strings"
 
-	fuse "github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse"
-	fs "github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse/fs"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	fuse "bazil.org/fuse"
+	fs "bazil.org/fuse/fs"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
+	"golang.org/x/net/context"
 
 	core "github.com/ipfs/go-ipfs/core"
 	nsfs "github.com/ipfs/go-ipfs/ipnsfs"

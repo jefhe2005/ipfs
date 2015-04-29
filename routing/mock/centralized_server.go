@@ -5,11 +5,11 @@ import (
 	"sync"
 	"time"
 
-	ds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	u "github.com/ipfs/go-ipfs/util"
 	"github.com/ipfs/go-ipfs/util/testutil"
+	ds "github.com/jbenet/go-datastore"
+	context "golang.org/x/net/context"
 )
 
 // server is the mockrouting.Client's private interface to the routing server

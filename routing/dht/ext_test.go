@@ -15,10 +15,10 @@ import (
 	record "github.com/ipfs/go-ipfs/routing/record"
 	u "github.com/ipfs/go-ipfs/util"
 
-	ggio "github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/gogoprotobuf/io"
-	ds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	dssync "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/sync"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	ggio "code.google.com/p/gogoprotobuf/io"
+	ds "github.com/jbenet/go-datastore"
+	dssync "github.com/jbenet/go-datastore/sync"
+	context "golang.org/x/net/context"
 )
 
 func TestGetFailures(t *testing.T) {

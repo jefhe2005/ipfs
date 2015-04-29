@@ -3,7 +3,7 @@ package updates
 import (
 	"testing"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/coreos/go-semver/semver"
+	"github.com/coreos/go-semver/semver"
 	"github.com/ipfs/go-ipfs/repo/config"
 )
 

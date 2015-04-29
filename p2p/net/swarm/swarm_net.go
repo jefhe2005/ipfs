@@ -8,9 +8,9 @@ import (
 	metrics "github.com/ipfs/go-ipfs/metrics"
 	inet "github.com/ipfs/go-ipfs/p2p/net"
 
-	ctxgroup "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-ctxgroup"
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	ctxgroup "github.com/jbenet/go-ctxgroup"
+	ma "github.com/jbenet/go-multiaddr"
+	context "golang.org/x/net/context"
 )
 
 // Network implements the inet.Network interface.

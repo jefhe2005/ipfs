@@ -3,10 +3,10 @@ package core
 import (
 	"errors"
 
-	ds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	dsync "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/sync"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	repo "github.com/ipfs/go-ipfs/repo"
+	ds "github.com/jbenet/go-datastore"
+	dsync "github.com/jbenet/go-datastore/sync"
+	context "golang.org/x/net/context"
 )
 
 var ErrAlreadyBuilt = errors.New("this builder has already been used")

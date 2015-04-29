@@ -3,10 +3,10 @@ package merkledag
 import (
 	"fmt"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"golang.org/x/net/context"
 
-	mh "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multihash"
 	u "github.com/ipfs/go-ipfs/util"
+	mh "github.com/jbenet/go-multihash"
 )
 
 // NodeMap maps u.Keys to Nodes.

@@ -6,7 +6,7 @@ import (
 
 	travis "github.com/ipfs/go-ipfs/util/testutil/ci/travis"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	context "golang.org/x/net/context"
 )
 
 // this test is on the context tool itself, not our stuff. it's for sanity on ours.

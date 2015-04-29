@@ -3,13 +3,13 @@ package namesys
 import (
 	"fmt"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
-	mh "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multihash"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"code.google.com/p/goprotobuf/proto"
 	pb "github.com/ipfs/go-ipfs/namesys/internal/pb"
 	path "github.com/ipfs/go-ipfs/path"
 	routing "github.com/ipfs/go-ipfs/routing"
 	u "github.com/ipfs/go-ipfs/util"
+	mh "github.com/jbenet/go-multihash"
+	"golang.org/x/net/context"
 )
 
 var log = u.Logger("namesys")

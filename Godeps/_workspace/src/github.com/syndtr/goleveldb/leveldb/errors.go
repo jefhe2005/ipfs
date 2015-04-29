@@ -7,7 +7,7 @@
 package leveldb
 
 import (
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/syndtr/goleveldb/leveldb/errors"
+	"github.com/syndtr/goleveldb/leveldb/errors"
 )
 
 var (

@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
-	inflect "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/chuckpreslar/inflect"
-	process "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	inflect "github.com/chuckpreslar/inflect"
 	u "github.com/ipfs/go-ipfs/util"
+	process "github.com/jbenet/goprocess"
+	context "golang.org/x/net/context"
 )
 
 var TaskWorkerCount = 16

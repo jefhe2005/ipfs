@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	mh "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multihash"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	merkledag "github.com/ipfs/go-ipfs/merkledag"
 	u "github.com/ipfs/go-ipfs/util"
+	mh "github.com/jbenet/go-multihash"
+	"golang.org/x/net/context"
 )
 
 var log = u.Logger("path")

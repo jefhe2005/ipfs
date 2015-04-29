@@ -1,0 +1,17 @@
+[cryptix@higgs /tmp/ipfsSymlink] ls
+[cryptix@higgs /tmp/ipfsSymlink] dd if=/dev/urandom of=test bs=1k count=100
+100+0 records in
+100+0 records out
+102400 bytes (102 kB) copied, 0.00661302 s, 15.5 MB/s
+[cryptix@higgs /tmp/ipfsSymlink] ln -s test simpleLink
+[cryptix@higgs /tmp/ipfsSymlink] ipfs add *
+added QmZePokqaRebXVmcWiSJyZfiqFqUSoHggWErbE9Q2H1Vex simpleLink
+added QmZePokqaRebXVmcWiSJyZfiqFqUSoHggWErbE9Q2H1Vex test
+[cryptix@higgs /tmp/ipfsSymlink] ln -s please/please/dont/exist broken_link && ipfs add broken_link
+Error: open broken_link: no such file or directory
+
+Use 'ipfs add --help' for information about this command
+[cryptix@higgs /tmp/ipfsSymlink] cd ..
+[cryptix@higgs /tmp] ipfs add -r ipfsSymlink
+Error: Post http://127.0.0.1:5001/api/v0/add?encoding=json&progress=true&r=true&stream-channels=true: open ipfsSymlink/broken_link: no such file or directory
+

@@ -12,13 +12,11 @@ import (
 	gopath "path"
 	"time"
 
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	random "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-random"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/ipfs/go-ipfs/util/ipfsaddr"
+	ma "github.com/jbenet/go-multiaddr"
+	random "github.com/jbenet/go-random"
+	context "golang.org/x/net/context"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	syncds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/sync"
 	commands "github.com/ipfs/go-ipfs/commands"
 	core "github.com/ipfs/go-ipfs/core"
 	corehttp "github.com/ipfs/go-ipfs/core/corehttp"
@@ -31,6 +29,8 @@ import (
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 	unit "github.com/ipfs/go-ipfs/thirdparty/unit"
 	ds2 "github.com/ipfs/go-ipfs/util/datastore2"
+	"github.com/jbenet/go-datastore"
+	syncds "github.com/jbenet/go-datastore/sync"
 )
 
 var elog = eventlog.Logger("gc-client")

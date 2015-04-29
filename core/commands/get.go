@@ -15,7 +15,7 @@ import (
 	tar "github.com/ipfs/go-ipfs/thirdparty/tar"
 	utar "github.com/ipfs/go-ipfs/unixfs/tar"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/cheggaaa/pb"
+	"github.com/cheggaaa/pb"
 )
 
 var ErrInvalidCompressionLevel = errors.New("Compression level must be between 1 and 9")

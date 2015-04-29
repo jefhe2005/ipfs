@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
+	"code.google.com/p/go.net/internal/iana"
 	"code.google.com/p/go.net/internal/icmp"
 	"code.google.com/p/go.net/internal/nettest"
 	"code.google.com/p/go.net/ipv4"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/go.net/internal/iana"
 )
 
 func TestPacketConnReadWriteMulticastUDP(t *testing.T) {

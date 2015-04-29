@@ -34,7 +34,7 @@ package proto_test
 import (
 	"testing"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/gogoprotobuf/proto"
+	"code.google.com/p/gogoprotobuf/proto"
 
 	pb "./testdata"
 )

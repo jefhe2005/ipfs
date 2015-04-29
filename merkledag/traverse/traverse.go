@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	"golang.org/x/net/context"
 
 	mdag "github.com/ipfs/go-ipfs/merkledag"
 )

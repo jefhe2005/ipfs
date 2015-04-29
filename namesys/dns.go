@@ -5,8 +5,8 @@ import (
 	"net"
 	"strings"
 
-	isd "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-is-domain"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	isd "github.com/jbenet/go-is-domain"
+	context "golang.org/x/net/context"
 
 	path "github.com/ipfs/go-ipfs/path"
 )

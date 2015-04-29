@@ -4,7 +4,7 @@ import (
 	"io"
 	"path"
 
-	lock "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/camlistore/lock"
+	lock "github.com/camlistore/lock"
 	"github.com/ipfs/go-ipfs/util"
 )
 

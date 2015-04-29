@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/bazil.org/fuse"
+	"bazil.org/fuse"
 )
 
 type flagDebug bool

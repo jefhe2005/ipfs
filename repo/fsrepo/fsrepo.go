@@ -10,11 +10,6 @@ import (
 	"strings"
 	"sync"
 
-	ds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/flatfs"
-	levelds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/leveldb"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/mount"
-	ldbopts "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/syndtr/goleveldb/leveldb/opt"
 	repo "github.com/ipfs/go-ipfs/repo"
 	"github.com/ipfs/go-ipfs/repo/common"
 	config "github.com/ipfs/go-ipfs/repo/config"
@@ -26,6 +21,11 @@ import (
 	u "github.com/ipfs/go-ipfs/util"
 	util "github.com/ipfs/go-ipfs/util"
 	ds2 "github.com/ipfs/go-ipfs/util/datastore2"
+	ds "github.com/jbenet/go-datastore"
+	"github.com/jbenet/go-datastore/flatfs"
+	levelds "github.com/jbenet/go-datastore/leveldb"
+	"github.com/jbenet/go-datastore/mount"
+	ldbopts "github.com/syndtr/goleveldb/leveldb/opt"
 )
 
 // version number that we are currently expecting to see

@@ -20,8 +20,8 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/huin/goupnp/httpu"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/huin/goupnp/ssdp"
+	"github.com/huin/goupnp/httpu"
+	"github.com/huin/goupnp/ssdp"
 )
 
 // ContextError is an error that wraps an error with some context information.

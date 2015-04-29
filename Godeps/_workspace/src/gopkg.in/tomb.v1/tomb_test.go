@@ -2,7 +2,7 @@ package tomb_test
 
 import (
 	"errors"
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/gopkg.in/tomb.v1"
+	"gopkg.in/tomb.v1"
 	"reflect"
 	"testing"
 )

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	chunk "github.com/ipfs/go-ipfs/importer/chunk"
 	dag "github.com/ipfs/go-ipfs/merkledag"
 	"github.com/ipfs/go-ipfs/pin"
 	ft "github.com/ipfs/go-ipfs/unixfs"
 	u "github.com/ipfs/go-ipfs/util"
+	"golang.org/x/net/context"
 )
 
 // BlockSizeLimit specifies the maximum size an imported block can have.

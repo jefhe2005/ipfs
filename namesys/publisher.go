@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	proto "github.com/ipfs/go-ipfs/Godeps/_workspace/src/code.google.com/p/goprotobuf/proto"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	proto "code.google.com/p/goprotobuf/proto"
+	context "golang.org/x/net/context"
 
 	dag "github.com/ipfs/go-ipfs/merkledag"
 	pb "github.com/ipfs/go-ipfs/namesys/internal/pb"

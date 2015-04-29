@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
 	cmds "github.com/ipfs/go-ipfs/commands"
 	"github.com/ipfs/go-ipfs/core"
 	commands "github.com/ipfs/go-ipfs/core/commands"
@@ -14,6 +13,7 @@ import (
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 	util "github.com/ipfs/go-ipfs/util"
+	ma "github.com/jbenet/go-multiaddr"
 )
 
 const (

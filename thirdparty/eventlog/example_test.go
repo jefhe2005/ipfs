@@ -1,6 +1,6 @@
 package eventlog
 
-import "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+import "golang.org/x/net/context"
 
 func ExampleEventLogger() {
 	{

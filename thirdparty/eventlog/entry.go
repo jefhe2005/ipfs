@@ -3,7 +3,7 @@ package eventlog
 import (
 	"time"
 
-	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 	"github.com/ipfs/go-ipfs/util"
 )
 

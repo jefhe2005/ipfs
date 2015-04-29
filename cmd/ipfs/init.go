@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	assets "github.com/ipfs/go-ipfs/assets"
 	cmds "github.com/ipfs/go-ipfs/commands"
 	core "github.com/ipfs/go-ipfs/core"
@@ -16,6 +15,7 @@ import (
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 	uio "github.com/ipfs/go-ipfs/unixfs/io"
 	u "github.com/ipfs/go-ipfs/util"
+	context "golang.org/x/net/context"
 )
 
 const nBitsForKeypairDefault = 2048

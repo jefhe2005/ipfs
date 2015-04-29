@@ -13,12 +13,12 @@ import (
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	eventlog "github.com/ipfs/go-ipfs/thirdparty/eventlog"
 
-	ctxgroup "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-ctxgroup"
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	ps "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream"
-	pst "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream/transport"
-	psy "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream/transport/yamux"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	ctxgroup "github.com/jbenet/go-ctxgroup"
+	ma "github.com/jbenet/go-multiaddr"
+	ps "github.com/jbenet/go-peerstream"
+	pst "github.com/jbenet/go-peerstream/transport"
+	psy "github.com/jbenet/go-peerstream/transport/yamux"
+	context "golang.org/x/net/context"
 )
 
 var log = eventlog.Logger("swarm2")

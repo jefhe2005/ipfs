@@ -7,7 +7,7 @@ import (
 	dag "github.com/ipfs/go-ipfs/merkledag"
 	mod "github.com/ipfs/go-ipfs/unixfs/mod"
 
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	context "golang.org/x/net/context"
 )
 
 type File struct {

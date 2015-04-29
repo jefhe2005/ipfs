@@ -5,9 +5,9 @@ import (
 	"net"
 	"time"
 
-	msgio "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-msgio"
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	msgio "github.com/jbenet/go-msgio"
+	ma "github.com/jbenet/go-multiaddr"
+	context "golang.org/x/net/context"
 
 	ic "github.com/ipfs/go-ipfs/p2p/crypto"
 	secio "github.com/ipfs/go-ipfs/p2p/crypto/secio"

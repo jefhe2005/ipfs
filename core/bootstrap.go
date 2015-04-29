@@ -15,11 +15,11 @@ import (
 	math2 "github.com/ipfs/go-ipfs/thirdparty/math2"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
 
-	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	goprocess "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess"
-	procctx "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess/context"
-	periodicproc "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess/periodic"
-	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+	ma "github.com/jbenet/go-multiaddr"
+	goprocess "github.com/jbenet/goprocess"
+	procctx "github.com/jbenet/goprocess/context"
+	periodicproc "github.com/jbenet/goprocess/periodic"
+	context "golang.org/x/net/context"
 )
 
 // ErrNotEnoughBootstrapPeers signals that we do not have enough bootstrap
