@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"net"
 	"sync"
 	"time"
 
 	mconn "github.com/ipfs/go-ipfs/metrics/conn"
 	conn "github.com/ipfs/go-ipfs/p2p/net/conn"
+	dialer "github.com/ipfs/go-ipfs/p2p/net/dial"
 	addrutil "github.com/ipfs/go-ipfs/p2p/net/swarm/addr"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
@@ -320,11 +320,7 @@ func (s *Swarm) dial(ctx context.Context, p peer.ID) (*Conn, error) {
 
 	// open connection to peer
 	d := &conn.Dialer{
-		Dialer: manet.Dialer{
-			Dialer: net.Dialer{
-				Timeout: s.dialT,
-			},
-		},
+		Dialer:     dialer.DialerWithTimeout(s.dialT),
 		LocalPeer:  s.local,
 		LocalAddrs: localAddrs,
 		PrivateKey: sk,

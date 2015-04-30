@@ -13,6 +13,7 @@ import (
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
 
+	//dialer "github.com/ipfs/go-ipfs/p2p/net/dial"
 	addrutil "github.com/ipfs/go-ipfs/p2p/net/swarm/addr"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 )
@@ -115,17 +116,17 @@ func (d *Dialer) rawConnDial(ctx context.Context, raddr ma.Multiaddr, remote pee
 	defer log.EventBegin(ctx, "connDialRawConn", logdial).Done()
 
 	// make a copy of the manet.Dialer, we may need to change its timeout.
-	madialer := d.Dialer
+	madialer := d.Dialer.Copy()
 
 	if laddr != nil && reuseportIsAvailable() {
 		// we're perhaps going to dial twice. half the timeout, so we can afford to.
 		// otherwise our context would expire right after the first dial.
-		madialer.Dialer.Timeout = (madialer.Dialer.Timeout / 2)
+		madialer.SetTimeout(madialer.GetTimeout() / 2)
 
 		// dial using reuseport.Dialer, because we're probably reusing addrs.
 		// this is optimistic, as the reuseDial may fail to bind the port.
 		rpev := log.EventBegin(ctx, "connDialReusePort", logdial)
-		if nconn, retry, reuseErr := reuseDial(madialer.Dialer, laddr, raddr); reuseErr == nil {
+		if nconn, retry, reuseErr := reuseDial(madialer.Child(), laddr, raddr); reuseErr == nil {
 			// if it worked, wrap the raw net.Conn with our manet.Conn
 			logdial["reuseport"] = "success"
 			rpev.Done()

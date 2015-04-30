@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	dialer "github.com/ipfs/go-ipfs/p2p/net/dial"
 	tu "github.com/ipfs/go-ipfs/util/testutil"
 
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
@@ -69,6 +70,7 @@ func setupConn(t *testing.T, ctx context.Context, secure bool) (a, b Conn, p1, p
 	d2 := &Dialer{
 		LocalPeer:  p2.ID,
 		PrivateKey: key2,
+		Dialer:     dialer.DialerWithTimeout(time.Minute),
 	}
 
 	var c2 Conn
@@ -151,6 +153,7 @@ func testDialer(t *testing.T, secure bool) {
 	d2 := &Dialer{
 		LocalPeer:  p2.ID,
 		PrivateKey: key2,
+		Dialer:     dialer.DialerWithTimeout(time.Minute),
 	}
 
 	go echoListen(ctx, l1)
@@ -226,6 +229,7 @@ func testDialerCloseEarly(t *testing.T, secure bool) {
 	d2 := &Dialer{
 		LocalPeer: p2.ID,
 		// PrivateKey: key2, -- dont give it key. we'll just close the conn.
+		Dialer: dialer.DialerWithTimeout(0),
 	}
 
 	errs := make(chan error, 100)
