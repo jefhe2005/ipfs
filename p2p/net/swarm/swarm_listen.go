@@ -83,12 +83,6 @@ func (s *Swarm) setupListener(maddr ma.Multiaddr) error {
 	if err != nil {
 		return err
 	}
-	log.Debugf("Swarm Listeners at %s", s.ListenAddresses())
-
-	// signal to our notifiees on successful conn.
-	s.notifyAll(func(n inet.Notifiee) {
-		n.Listen((*Network)(s), maddr)
-	})
 
 	// go consume peerstream's listen accept errors. note, these ARE errors.
 	// they may be killing the listener, and if we get _any_ we should be
@@ -117,6 +111,29 @@ func (s *Swarm) setupListener(maddr ma.Multiaddr) error {
 	return nil
 }
 
+func (s *Swarm) addListener(list conn.Listener, maddr ma.Multiaddr) (*ps.Listener, error) {
+	if cw, ok := list.(conn.ListenerConnWrapper); ok {
+		cw.SetConnWrapper(func(c manet.Conn) manet.Conn {
+			return mconn.WrapConn(s.bwc, c)
+		})
+	}
+
+	// AddListener to the peerstream Listener. this will begin accepting connections
+	// and streams!
+	sl, err := s.swarm.AddListener(list)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Swarm Listeners at %s", s.ListenAddresses())
+
+	// signal to our notifiees on successful conn.
+	s.notifyAll(func(n inet.Notifiee) {
+		n.Listen((*Network)(s), maddr)
+	})
+
+	return sl, nil
+}
+
 // connHandler is called by the StreamSwarm whenever a new connection is added
 // here we configure it slightly. Note that this is sequential, so if anything
 // will take a while do it in a goroutine.
@@ -132,7 +149,7 @@ func (s *Swarm) connHandler(c *ps.Conn) *Conn {
 
 	sc, err := s.newConnSetup(ctx, c)
 	if err != nil {
-		log.Debug(err)
+		log.Warning(err)
 		log.Event(ctx, "newConnHandlerDisconnect", lgbl.NetConn(c.NetConn()), lgbl.Error(err))
 		c.Close() // boom. close it.
 		return nil

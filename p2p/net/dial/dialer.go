@@ -13,6 +13,8 @@ type Dialer interface {
 	GetTimeout() time.Duration
 	SetTimeout(time.Duration)
 
+	SupportsReuseport() bool
+
 	Child() net.Dialer
 
 	Dial(ma.Multiaddr) (manet.Conn, error)
@@ -40,6 +42,10 @@ func (nd *manetDialer) Dial(a ma.Multiaddr) (manet.Conn, error) {
 
 func (nd *manetDialer) Child() net.Dialer {
 	return nd.d.Dialer
+}
+
+func (nd *manetDialer) SupportsReuseport() bool {
+	return true
 }
 
 func DialerWithTimeout(t time.Duration) Dialer {

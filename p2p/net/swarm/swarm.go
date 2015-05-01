@@ -9,6 +9,8 @@ import (
 
 	metrics "github.com/ipfs/go-ipfs/metrics"
 	inet "github.com/ipfs/go-ipfs/p2p/net"
+	conn "github.com/ipfs/go-ipfs/p2p/net/conn"
+	dialer "github.com/ipfs/go-ipfs/p2p/net/dial"
 	filter "github.com/ipfs/go-ipfs/p2p/net/filter"
 	addrutil "github.com/ipfs/go-ipfs/p2p/net/swarm/addr"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
@@ -52,9 +54,10 @@ type Swarm struct {
 	peers peer.Peerstore
 	connh ConnHandler
 
-	dsync dialsync
-	backf dialbackoff
-	dialT time.Duration // mainly for tests
+	dsync  dialsync
+	backf  dialbackoff
+	dialT  time.Duration // mainly for tests
+	dialer dialer.Dialer
 
 	notifmu sync.RWMutex
 	notifs  map[inet.Notifiee]ps.Notifiee
@@ -84,6 +87,7 @@ func NewSwarm(ctx context.Context, listenAddrs []ma.Multiaddr,
 		notifs:  make(map[inet.Notifiee]ps.Notifiee),
 		bwc:     bwc,
 		Filters: new(filter.Filters),
+		dialer:  dialer.NewDialer(),
 	}
 
 	// configure Swarm
@@ -95,6 +99,35 @@ func NewSwarm(ctx context.Context, listenAddrs []ma.Multiaddr,
 	s.Notify((*metricsNotifiee)(s))
 
 	return s, s.listen(listenAddrs)
+}
+
+func NewSwarmWithCustomNet(ctx context.Context, listeners []conn.Listener, d dialer.Dialer,
+	local peer.ID, peers peer.Peerstore) (*Swarm, error) {
+
+	s := &Swarm{
+		swarm:  ps.NewSwarm(PSTransport),
+		local:  local,
+		peers:  peers,
+		cg:     ctxgroup.WithContext(ctx),
+		dialT:  DialTimeout,
+		notifs: make(map[inet.Notifiee]ps.Notifiee),
+		bwc:    metrics.NewBandwidthCounter(),
+		dialer: d,
+	}
+
+	// configure Swarm
+	s.cg.SetTeardown(s.teardown)
+	s.SetConnHandler(nil) // make sure to setup our own conn handler.
+
+	for _, list := range listeners {
+		_, err := s.addListener(list, nil)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return s, nil
+
 }
 
 func (s *Swarm) teardown() error {
