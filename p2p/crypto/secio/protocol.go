@@ -112,6 +112,7 @@ func (s *secureSession) Handshake() error {
 func (s *secureSession) runHandshake() error {
 	ctx, cancel := context.WithTimeout(s.ctx, HandshakeTimeout) // remove
 	defer cancel()
+	errs := make(chan error)
 
 	// =============================================================================
 	// step 1. Propose -- propose cipher suite + send pubkeys + nonce
@@ -143,14 +144,23 @@ func (s *secureSession) runHandshake() error {
 	// 	nonceOut, SupportedExchanges, SupportedCiphers, SupportedHashes)
 
 	// Send Propose packet (respects ctx)
-	proposeOutBytes, err := writeMsgCtx(ctx, s.insecureM, proposeOut)
-	if err != nil {
-		return err
-	}
+	var proposeOutBytes []byte
+	go func() {
+		// Do write in a separate goroutine to prevent deadlocks
+		var err error
+		proposeOutBytes, err = writeMsgCtx(ctx, s.insecureM, proposeOut)
+		errs <- err
+	}()
 
 	// Receive + Parse their Propose packet and generate an Exchange packet.
 	proposeIn := new(pb.Propose)
 	proposeInBytes, err := readMsgCtx(ctx, s.insecureM, proposeIn)
+	if err != nil {
+		return err
+	}
+
+	// Now check error from the write
+	err = <-errs
 	if err != nil {
 		return err
 	}
@@ -233,13 +243,20 @@ func (s *secureSession) runHandshake() error {
 	}
 
 	// Send Propose packet (respects ctx)
-	if _, err := writeMsgCtx(ctx, s.insecureM, exchangeOut); err != nil {
-		return err
-	}
+	go func() {
+		_, err := writeMsgCtx(ctx, s.insecureM, exchangeOut)
+		errs <- err
+	}()
 
 	// Receive + Parse their Exchange packet.
 	exchangeIn := new(pb.Exchange)
 	if _, err := readMsgCtx(ctx, s.insecureM, exchangeIn); err != nil {
+		return err
+	}
+
+	// Check error from write
+	err = <-errs
+	if err != nil {
 		return err
 	}
 
@@ -321,14 +338,22 @@ func (s *secureSession) runHandshake() error {
 
 	// log.Debug("3.0 finish. sending: %v", proposeIn.GetRand())
 	// send their Nonce.
-	if _, err := s.secure.Write(proposeIn.GetRand()); err != nil {
-		return fmt.Errorf("Failed to write Finish nonce: %s", err)
-	}
+	go func() {
+		if _, err := s.secure.Write(proposeIn.GetRand()); err != nil {
+			errs <- fmt.Errorf("Failed to write Finish nonce: %s", err)
+		}
+		errs <- nil
+	}()
 
 	// read our Nonce
 	nonceOut2 := make([]byte, len(nonceOut))
 	if _, err := io.ReadFull(s.secure, nonceOut2); err != nil {
 		return fmt.Errorf("Failed to read Finish nonce: %s", err)
+	}
+
+	err = <-errs
+	if err != nil {
+		return err
 	}
 
 	// log.Debug("3.0 finish.\n\texpect: %v\n\tactual: %v", nonceOut, nonceOut2)
