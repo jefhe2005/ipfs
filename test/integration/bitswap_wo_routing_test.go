@@ -9,7 +9,7 @@ import (
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/ipfs/go-ipfs/blocks"
 	"github.com/ipfs/go-ipfs/core"
-	mocknet "github.com/ipfs/go-ipfs/p2p/net/mock"
+	mn2 "github.com/ipfs/go-ipfs/p2p/net/mock2"
 	testutil "github.com/ipfs/go-ipfs/util/testutil"
 )
 
@@ -19,12 +19,12 @@ func TestBitswapWithoutRouting(t *testing.T) {
 	const numPeers = 4
 
 	// create network
-	mn, err := mocknet.FullMeshLinked(ctx, numPeers)
+	ns, err := mn2.NewNetworkSimulator(numPeers)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	peers := mn.Peers()
+	peers := ns.Peers()
 	if len(peers) < numPeers {
 		t.Fatal(errors.New("test initialization error"))
 	}
@@ -34,7 +34,7 @@ func TestBitswapWithoutRouting(t *testing.T) {
 
 	var nodes []*core.IpfsNode
 	for _, p := range peers {
-		n, err := core.NewIPFSNode(ctx, core.ConfigOption(MocknetTestRepo(p, mn.Host(p), conf, core.DHTOption)))
+		n, err := core.NewIPFSNode(ctx, MocknetTestRepo(p, ns, conf, core.DHTOption))
 		if err != nil {
 			t.Fatal(err)
 		}

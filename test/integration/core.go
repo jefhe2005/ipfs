@@ -8,7 +8,7 @@ import (
 	core "github.com/ipfs/go-ipfs/core"
 	bitswap "github.com/ipfs/go-ipfs/exchange/bitswap"
 	bsnet "github.com/ipfs/go-ipfs/exchange/bitswap/network"
-	host "github.com/ipfs/go-ipfs/p2p/host"
+	mn2 "github.com/ipfs/go-ipfs/p2p/net/mock2"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	"github.com/ipfs/go-ipfs/repo"
 	delay "github.com/ipfs/go-ipfs/thirdparty/delay"
@@ -19,7 +19,7 @@ import (
 
 var log = eventlog.Logger("epictest")
 
-func MocknetTestRepo(p peer.ID, h host.Host, conf testutil.LatencyConfig, routing core.RoutingOption) core.ConfigOption {
+func MocknetTestRepo(p peer.ID, ns *mn2.NetworkSimulator, conf testutil.LatencyConfig, routing core.RoutingOption) core.ConfigOption {
 	return func(ctx context.Context) (*core.IpfsNode, error) {
 		const kWriteCacheElems = 100
 		const alwaysSendToPeer = true
@@ -29,12 +29,19 @@ func MocknetTestRepo(p peer.ID, h host.Host, conf testutil.LatencyConfig, routin
 		}
 		ds := r.Datastore()
 
+		pstore := peer.NewPeerstore()
+		h, err := ns.HostOption(ctx, p, pstore, nil)
+		if err != nil {
+			return nil, err
+		}
+
 		n := &core.IpfsNode{
 			Peerstore: h.Peerstore(),
 			Repo:      r,
 			PeerHost:  h,
 			Identity:  p,
 		}
+
 		dhtt, err := routing(ctx, n.PeerHost, n.Repo.Datastore())
 		if err != nil {
 			return nil, err
