@@ -3,6 +3,7 @@ package netsim
 import (
 	"errors"
 	"fmt"
+	"io"
 	"math/rand"
 	"net"
 	"time"
@@ -19,9 +20,11 @@ import (
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	ipaddr "github.com/ipfs/go-ipfs/util/ipfsaddr"
 
+	u "github.com/ipfs/go-ipfs/util"
 	tu "github.com/ipfs/go-ipfs/util/testutil"
 )
 
+var log = u.Logger("netsim")
 var _ = conn.ID
 
 type NetworkSimulator struct {
@@ -212,65 +215,92 @@ func (ns *NetworkSimulator) NewConnPair(local, remote peer.ID, fullsync bool) (*
 	laddr := ns.listeners[local].Multiaddr()
 	raddr := ns.listeners[remote].Multiaddr()
 
-	var ltok, rtok chan struct{}
-	if !fullsync {
-		ltok := make(chan struct{}, 1)
-		rtok := make(chan struct{}, 1)
+	ctx, cancel := context.WithCancel(context.Background())
 
-		ltok <- struct{}{}
-		rtok <- struct{}{}
+	bufsize := 50
+	lc := &Conn{
+		Conn:   conl,
+		local:  local,
+		remote: remote,
+		laddr:  laddr,
+		raddr:  raddr,
+		opts:   ns.ConOpts,
+		msgs:   make(chan []byte, bufsize),
+		delay:  make(chan time.Time, bufsize),
+		ctx:    ctx,
+		cancel: cancel,
 	}
+	go lc.transport()
 
-	return &Conn{
-			Conn:       conl,
-			local:      local,
-			remote:     remote,
-			laddr:      laddr,
-			raddr:      raddr,
-			writeToken: ltok,
-			opts:       ns.ConOpts,
-		},
-		&Conn{
-			Conn:       conr,
-			local:      remote,
-			remote:     local,
-			laddr:      raddr,
-			raddr:      laddr,
-			writeToken: rtok,
-			opts:       ns.ConOpts,
-		}, nil
+	rc := &Conn{
+		Conn:   conr,
+		local:  remote,
+		remote: local,
+		laddr:  raddr,
+		raddr:  laddr,
+		opts:   ns.ConOpts,
+		msgs:   make(chan []byte, bufsize),
+		delay:  make(chan time.Time, bufsize),
+		ctx:    ctx,
+		cancel: cancel,
+	}
+	go rc.transport()
+
+	return lc, rc, nil
+}
+
+// transport will grab message arrival times, wait until that time, and
+// then write the message out when it is scheduled to arrive
+func (c *Conn) transport() {
+	for {
+		select {
+		case t := <-c.delay:
+			now := time.Now()
+			if !now.After(t) {
+				time.Sleep(t.Sub(now))
+			}
+			msg := <-c.msgs
+
+			_, err := c.Conn.Write(msg)
+			if err != nil {
+				return
+			}
+		case <-c.ctx.Done():
+			return
+		}
+	}
 }
 
 type Conn struct {
 	net.Conn
-	local      peer.ID
-	remote     peer.ID
-	laddr      ma.Multiaddr
-	raddr      ma.Multiaddr
-	writeToken chan struct{}
-	opts       ConnectionOpts
+	local  peer.ID
+	remote peer.ID
+	laddr  ma.Multiaddr
+	raddr  ma.Multiaddr
+	opts   ConnectionOpts
+
+	msgs   chan []byte
+	delay  chan time.Time
+	ctx    context.Context
+	cancel func()
 }
 
 func (c *Conn) Write(b []byte) (int, error) {
-	if c.writeToken == nil {
-		return c.Conn.Write(b)
+	delay := c.opts.GetLatency()
+	arrival := time.Now().Add(delay)
+
+	select {
+	case c.msgs <- b:
+		c.delay <- arrival
+	case <-c.ctx.Done():
+		return 0, io.EOF
 	}
-	t, ok := <-c.writeToken
-	if !ok {
-		return 0, errors.New("attempted to write on a closed connection")
-	}
-	go func() {
-		time.Sleep(c.opts.GetLatency())
-		c.Conn.Write(b)
-		c.writeToken <- t
-	}()
+
 	return len(b), nil
 }
 
 func (c *Conn) Close() error {
-	if c.writeToken != nil {
-		close(c.writeToken)
-	}
+	c.cancel()
 	return c.Conn.Close()
 }
 
@@ -289,7 +319,7 @@ type ConnectionOpts struct {
 	Bandwidth int64
 }
 
-func (co ConnectionOpts) GetLatency() time.Duration {
+func (co *ConnectionOpts) GetLatency() time.Duration {
 	var jitter time.Duration
 	if co.Jitter > 0 {
 		jitter = time.Duration(rand.Intn(2*int(co.Jitter))) - co.Jitter
