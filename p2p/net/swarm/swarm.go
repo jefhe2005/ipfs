@@ -105,14 +105,15 @@ func NewSwarmWithCustomNet(ctx context.Context, listeners []conn.Listener, d dia
 	local peer.ID, peers peer.Peerstore) (*Swarm, error) {
 
 	s := &Swarm{
-		swarm:  ps.NewSwarm(PSTransport),
-		local:  local,
-		peers:  peers,
-		cg:     ctxgroup.WithContext(ctx),
-		dialT:  DialTimeout,
-		notifs: make(map[inet.Notifiee]ps.Notifiee),
-		bwc:    metrics.NewBandwidthCounter(),
-		dialer: d,
+		swarm:   ps.NewSwarm(PSTransport),
+		local:   local,
+		peers:   peers,
+		cg:      ctxgroup.WithContext(ctx),
+		dialT:   DialTimeout,
+		notifs:  make(map[inet.Notifiee]ps.Notifiee),
+		bwc:     metrics.NewBandwidthCounter(),
+		Filters: new(filter.Filters),
+		dialer:  d,
 	}
 
 	// configure Swarm

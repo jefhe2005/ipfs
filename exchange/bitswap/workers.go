@@ -93,7 +93,7 @@ func (bs *Bitswap) provideWorker(ctx context.Context) {
 			ctx, cancel := context.WithTimeout(ctx, provideTimeout)
 			err := bs.network.Provide(ctx, k)
 			if err != nil {
-				log.Error(err)
+				log.Warning(err)
 			}
 			cancel()
 		case <-ctx.Done():

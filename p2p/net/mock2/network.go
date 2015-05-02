@@ -1,6 +1,8 @@
 package netsim
 
 import (
+	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -217,7 +219,13 @@ func (ns *NetworkSimulator) NewConnPair(local, remote peer.ID, fullsync bool) (*
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	bufsize := 50
+	lread := bufio.NewReader(conl)
+	rread := bufio.NewReader(conr)
+
+	lwrite := bufio.NewWriter(conl)
+	rwrite := bufio.NewWriter(conr)
+
+	bufsize := 10
 	lc := &Conn{
 		Conn:   conl,
 		local:  local,
@@ -229,6 +237,8 @@ func (ns *NetworkSimulator) NewConnPair(local, remote peer.ID, fullsync bool) (*
 		delay:  make(chan time.Time, bufsize),
 		ctx:    ctx,
 		cancel: cancel,
+		read:   lread,
+		write:  lwrite,
 	}
 	go lc.transport()
 
@@ -243,6 +253,8 @@ func (ns *NetworkSimulator) NewConnPair(local, remote peer.ID, fullsync bool) (*
 		delay:  make(chan time.Time, bufsize),
 		ctx:    ctx,
 		cancel: cancel,
+		read:   rread,
+		write:  rwrite,
 	}
 	go rc.transport()
 
@@ -252,18 +264,45 @@ func (ns *NetworkSimulator) NewConnPair(local, remote peer.ID, fullsync bool) (*
 // transport will grab message arrival times, wait until that time, and
 // then write the message out when it is scheduled to arrive
 func (c *Conn) transport() {
+	bufsize := 256
+	buf := new(bytes.Buffer)
+	ticker := time.NewTicker(time.Millisecond * 4)
+loop:
 	for {
 		select {
 		case t := <-c.delay:
-			now := time.Now()
-			if !now.After(t) {
-				time.Sleep(t.Sub(now))
-			}
 			msg := <-c.msgs
 
+			now := time.Now()
+			buffered := len(msg) + buf.Len()
+
+			if !now.After(t) {
+				if buffered < bufsize {
+					buf.Write(msg)
+					continue loop
+				} else {
+					time.Sleep(t.Sub(now))
+				}
+			}
+
+			if buf.Len() > 0 {
+				_, err := c.Conn.Write(buf.Bytes())
+				if err != nil {
+					return
+				}
+				buf.Reset()
+			}
 			_, err := c.Conn.Write(msg)
 			if err != nil {
 				return
+			}
+		case <-ticker.C:
+			if buf.Len() > 0 {
+				_, err := c.Conn.Write(buf.Bytes())
+				if err != nil {
+					return
+				}
+				buf.Reset()
 			}
 		case <-c.ctx.Done():
 			return
@@ -271,8 +310,14 @@ func (c *Conn) transport() {
 	}
 }
 
+func (c *Conn) Read(b []byte) (int, error) {
+	return c.read.Read(b)
+}
+
 type Conn struct {
 	net.Conn
+	read   io.Reader
+	write  io.Writer
 	local  peer.ID
 	remote peer.ID
 	laddr  ma.Multiaddr
@@ -325,4 +370,12 @@ func (co *ConnectionOpts) GetLatency() time.Duration {
 		jitter = time.Duration(rand.Intn(2*int(co.Jitter))) - co.Jitter
 	}
 	return co.Delay + jitter
+}
+
+func (co *ConnectionOpts) MinLatency() time.Duration {
+	return co.Delay - co.Jitter
+}
+
+func (co *ConnectionOpts) MaxLatency() time.Duration {
+	return co.Delay + co.Jitter
 }

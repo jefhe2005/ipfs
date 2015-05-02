@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"testing"
+	"time"
 
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/ipfs/go-ipfs/core"
@@ -15,15 +16,47 @@ import (
 	testutil "github.com/ipfs/go-ipfs/util/testutil"
 )
 
-func BenchmarkCat1MB(b *testing.B) { benchmarkVarCat(b, unit.MB*1) }
-func BenchmarkCat2MB(b *testing.B) { benchmarkVarCat(b, unit.MB*2) }
-func BenchmarkCat4MB(b *testing.B) { benchmarkVarCat(b, unit.MB*4) }
+func BenchmarkCat1MB(b *testing.B)  { benchmarkVarCat(b, unit.MB*1) }
+func BenchmarkCat2MB(b *testing.B)  { benchmarkVarCat(b, unit.MB*2) }
+func BenchmarkCat4MB(b *testing.B)  { benchmarkVarCat(b, unit.MB*4) }
+func BenchmarkCat8MB(b *testing.B)  { benchmarkVarCat(b, unit.MB*8) }
+func BenchmarkCat16MB(b *testing.B) { benchmarkVarCat(b, unit.MB*16) }
+func BenchmarkCat32MB(b *testing.B) { benchmarkVarCat(b, unit.MB*32) }
+
+func BenchmarkCat16MB_0Ms(b *testing.B) {
+	benchmarkVarCatConf(b, unit.MB*16, instant)
+}
+
+func BenchmarkCat16MB_25Ms(b *testing.B) {
+	cfg := testutil.LatencyConfig{
+		NetworkLatency: time.Millisecond * 25,
+	}
+	benchmarkVarCatConf(b, unit.MB*16, cfg)
+}
+
+func BenchmarkCat16MB_50Ms(b *testing.B) {
+	cfg := testutil.LatencyConfig{
+		NetworkLatency: time.Millisecond * 50,
+	}
+	benchmarkVarCatConf(b, unit.MB*16, cfg)
+}
+
+func BenchmarkCat16MB_100Ms(b *testing.B) {
+	cfg := testutil.LatencyConfig{
+		NetworkLatency: time.Millisecond * 100,
+	}
+	benchmarkVarCatConf(b, unit.MB*16, cfg)
+}
 
 func benchmarkVarCat(b *testing.B, size int64) {
+	benchmarkVarCatConf(b, size, instant)
+}
+
+func benchmarkVarCatConf(b *testing.B, size int64, conf testutil.LatencyConfig) {
 	data := RandomBytes(size)
 	b.SetBytes(size)
 	for n := 0; n < b.N; n++ {
-		err := benchCat(b, data, instant)
+		err := benchCat(b, data, conf)
 		if err != nil {
 			b.Fatal(err)
 		}
