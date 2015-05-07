@@ -141,7 +141,7 @@ func (fs *Filesystem) newKeyRoot(parent context.Context, k ci.PrivKey) (*KeyRoot
 		return nil, err
 	}
 
-	name := u.Key(hash).Pretty()
+	name := "/ipns/" + u.Key(hash).String()
 
 	root := new(KeyRoot)
 	root.key = k
@@ -150,14 +150,14 @@ func (fs *Filesystem) newKeyRoot(parent context.Context, k ci.PrivKey) (*KeyRoot
 	ctx, cancel := context.WithCancel(parent)
 	defer cancel()
 
-	pointsTo, err := fs.nsys.Resolve(ctx, name)
+	pointsTo, err := fs.nsys.Resolve(ctx, name, 0)
 	if err != nil {
 		err = namesys.InitializeKeyspace(ctx, fs.dserv, fs.nsys, fs.pins, k)
 		if err != nil {
 			return nil, err
 		}
 
-		pointsTo, err = fs.nsys.Resolve(ctx, name)
+		pointsTo, err = fs.nsys.Resolve(ctx, name, 0)
 		if err != nil {
 			return nil, err
 		}

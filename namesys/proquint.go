@@ -10,15 +10,20 @@ import (
 
 type ProquintResolver struct{}
 
-// CanResolve implements Resolver. Checks whether the name is a proquint string.
-func (r *ProquintResolver) CanResolve(name string) bool {
+// canResolve implements resolver. Checks whether the name is a proquint string.
+func (r *ProquintResolver) canResolve(name string) bool {
 	ok, err := proquint.IsProquint(name)
 	return err == nil && ok
 }
 
-// Resolve implements Resolver. Decodes the proquint string.
-func (r *ProquintResolver) Resolve(ctx context.Context, name string) (path.Path, error) {
-	ok := r.CanResolve(name)
+// Resolve implements Resolver.
+func (r *ProquintResolver) Resolve(ctx context.Context, name string, depth int) (path.Path, error) {
+	return resolve(ctx, r, name, depth, "/ipns/")
+}
+
+// resolveOnce implements resolver. Decodes the proquint string.
+func (r *ProquintResolver) resolveOnce(ctx context.Context, name string) (path.Path, error) {
+	ok := r.canResolve(name)
 	if !ok {
 		return "", errors.New("not a valid proquint string")
 	}

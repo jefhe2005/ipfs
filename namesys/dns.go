@@ -17,16 +17,26 @@ type DNSResolver struct {
 	// cache would need a timeout
 }
 
-// CanResolve implements Resolver
-func (r *DNSResolver) CanResolve(name string) bool {
+// canResolve implements resolver.
+func (r *DNSResolver) canResolve(name string) bool {
 	return isd.IsDomain(name)
 }
 
-// Resolve implements Resolver
+// Resolve implements Resolver.
+func (r *DNSResolver) Resolve(ctx context.Context, name string, depth int) (path.Path, error) {
+	return resolve(ctx, r, name, depth, "/ipns/")
+}
+
+// resolveOnce implements resolver.
 // TXT records for a given domain name should contain a b58
 // encoded multihash.
-func (r *DNSResolver) Resolve(ctx context.Context, name string) (path.Path, error) {
-	log.Info("DNSResolver resolving %v", name)
+func (r *DNSResolver) resolveOnce(ctx context.Context, name string) (path.Path, error) {
+	ok := r.canResolve(name)
+	if !ok {
+		return "", errors.New("not a valid domain name")
+	}
+
+	log.Infof("DNSResolver resolving %s", name)
 	txt, err := net.LookupTXT(name)
 	if err != nil {
 		return "", err
@@ -43,7 +53,7 @@ func (r *DNSResolver) Resolve(ctx context.Context, name string) (path.Path, erro
 }
 
 func parseEntry(txt string) (path.Path, error) {
-	p, err := path.ParseKeyToPath(txt)
+	p, err := path.ParseKeyToPath(txt)  // bare IPFS multihashes
 	if err == nil {
 		return p, nil
 	}

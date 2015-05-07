@@ -30,15 +30,29 @@ func NewRoutingResolver(route routing.IpfsRouting) Resolver {
 	return &routingResolver{routing: route}
 }
 
-// CanResolve implements Resolver. Checks whether name is a b58 encoded string.
-func (r *routingResolver) CanResolve(name string) bool {
+// newRoutingResolver returns a resolver instead of a Resolver.
+func newRoutingResolver(route routing.IpfsRouting) resolver {
+	if route == nil {
+		panic("attempt to create resolver with nil routing system")
+	}
+
+	return &routingResolver{routing: route}
+}
+
+// canResolve implements resolver. Checks whether name is a b58 encoded string.
+func (r *routingResolver) canResolve(name string) bool {
 	_, err := mh.FromB58String(name)
 	return err == nil
 }
 
-// Resolve implements Resolver. Uses the IPFS routing system to resolve SFS-like
-// names.
-func (r *routingResolver) Resolve(ctx context.Context, name string) (path.Path, error) {
+// Resolve implements Resolver.
+func (r *routingResolver) Resolve(ctx context.Context, name string, depth int) (path.Path, error) {
+	return resolve(ctx, r, name, depth, "/ipns/")
+}
+
+// resolveOnce implements resolver. Uses the IPFS routing system to
+// resolve SFS-like names.
+func (r *routingResolver) resolveOnce(ctx context.Context, name string) (path.Path, error) {
 	log.Debugf("RoutingResolve: '%s'", name)
 	hash, err := mh.FromB58String(name)
 	if err != nil {

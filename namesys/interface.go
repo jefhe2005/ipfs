@@ -12,6 +12,10 @@ import (
 // ErrResolveFailed signals an error when attempting to resolve.
 var ErrResolveFailed = errors.New("could not resolve name.")
 
+// ErrResolveRecursion signals a recursion-depth limit.
+var ErrResolveRecursion = errors.New(
+	"could not resolve name (recursion limit exceeded).")
+
 // ErrPublishFailed signals an error when attempting to publish.
 var ErrPublishFailed = errors.New("could not publish name.")
 
@@ -31,10 +35,7 @@ type NameSystem interface {
 type Resolver interface {
 
 	// Resolve looks up a name, and returns the value previously published.
-	Resolve(ctx context.Context, name string) (value path.Path, err error)
-
-	// CanResolve checks whether this Resolver can resolve a name
-	CanResolve(name string) bool
+	Resolve(ctx context.Context, name string, depth int) (value path.Path, err error)
 }
 
 // Publisher is an object capable of publishing particular names.

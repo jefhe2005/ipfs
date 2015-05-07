@@ -140,7 +140,7 @@ func (s *Root) Lookup(ctx context.Context, name string) (fs.Node, error) {
 	}
 
 	// other links go through ipns resolution and are symlinked into the ipfs mountpoint
-	resolved, err := s.Ipfs.Namesys.Resolve(s.Ipfs.Context(), name)
+	resolved, err := s.Ipfs.Namesys.Resolve(s.Ipfs.Context(), name, 0)
 	if err != nil {
 		log.Warningf("ipns: namesys resolve error: %s", err)
 		return nil, fuse.ENOENT
@@ -150,9 +150,6 @@ func (s *Root) Lookup(ctx context.Context, name string) (fs.Node, error) {
 	if segments[0] == "ipfs" {
 		p := strings.Join(resolved.Segments()[1:], "/")
 		return &Link{s.IpfsRoot + "/" + p}, nil
-	} else if segments[0] == "ipns" {
-		p := strings.Join(resolved.Segments()[1:], "/")
-		return &Link{s.IpnsRoot + "/" + p}, nil
 	} else {
 		log.Error("Invalid path.Path: ", resolved)
 		return nil, errors.New("invalid path from ipns record")

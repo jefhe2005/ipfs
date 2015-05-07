@@ -33,7 +33,7 @@ func TestRoutingResolve(t *testing.T) {
 	}
 
 	pkhash := u.Hash(pubkb)
-	res, err := resolver.Resolve(context.Background(), u.Key(pkhash).Pretty())
+	res, err := resolver.Resolve(context.Background(), u.Key(pkhash).String(), 0)
 	if err != nil {
 		t.Fatal(err)
 	}
