@@ -71,9 +71,9 @@ func (bs *Bitswap) taskWorker(ctx context.Context) {
 				if !ok {
 					continue
 				}
-				log.Event(ctx, "deliverBlocks", envelope.Message, envelope.Peer)
-				bs.send(ctx, envelope.Peer, envelope.Message)
-				envelope.Sent()
+
+				//log.Event(ctx, "deliverBlocks", envelope.Message, envelope.Peer)
+				bs.pm.SendBlock(envelope)
 			case <-ctx.Done():
 				return
 			}
@@ -189,7 +189,7 @@ func (bs *Bitswap) rebroadcastWorker(parent context.Context) {
 		case <-tick:
 			n := bs.wantlist.Len()
 			if n > 0 {
-				log.Debug(n, inflect.FromNumber("keys", n), "in bitswap wantlist")
+				log.Debugf("%d %s in bitswap wantlist", n, inflect.FromNumber("keys", n))
 			}
 		case <-broadcastSignal: // resend unfulfilled wantlist keys
 			entries := bs.wantlist.Entries()
