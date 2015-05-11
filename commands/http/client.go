@@ -84,7 +84,8 @@ func (c *client) Send(req cmds.Request) (cmds.Response, error) {
 
 	ec := make(chan error, 1)
 	rc := make(chan cmds.Response, 1)
-	dc := req.Context().Context.Done()
+	ctx := req.Context().Context
+	dc := ctx.Done()
 
 	go func() {
 		httpRes, err := http.DefaultClient.Do(httpReq)
@@ -104,11 +105,18 @@ func (c *client) Send(req cmds.Request) (cmds.Response, error) {
 	for {
 		select {
 		case <-dc:
-			log.Debug("Context cancelled, cancelling HTTP request...")
+			log.Critical("Context cancelled, cancelling HTTP request...")
 			tr := http.DefaultTransport.(*http.Transport)
 			tr.CancelRequest(httpReq)
 			dc = nil // Wait for ec or rc
+			if err := ctx.Err(); err != nil {
+				log.Criticalf("client.Send Context error: %s", err)
+			}
 		case err := <-ec:
+			log.Critical("error from error chan")
+			if err := ctx.Err(); err != nil {
+				log.Criticalf("client.Send Context error: %s", err)
+			}
 			return nil, err
 		case res := <-rc:
 			if found && len(previousUserProvidedEncoding) > 0 {
@@ -199,12 +207,20 @@ func getResponse(httpRes *http.Response, req cmds.Request) (cmds.Response, error
 
 				select {
 				case <-ctx.Done():
+					log.Critical("getResponse ctx done")
+					if err := ctx.Err(); err != nil {
+						log.Criticalf("getResponse ctx error: %s", err)
+					}
 					close(outChan)
 					return
 				default:
 				}
 
 				if err == io.EOF {
+					log.Critical("got eof")
+					if err := ctx.Err(); err != nil {
+						log.Criticalf("eof ctx error: %s", err)
+					}
 					close(outChan)
 					return
 				}
