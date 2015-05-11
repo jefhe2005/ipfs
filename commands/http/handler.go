@@ -103,6 +103,15 @@ func (i Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	i.ctx.Context = ctx
 	req.SetContext(i.ctx)
 
+	// set up CloseNotifier to cancel long running operations when the initiating http connection goes away
+	if cn, ok := w.(http.CloseNotifier); ok {
+		go func() {
+			<-cn.CloseNotify()
+			log.Critical("http connection closed, canceling")
+			cancel()
+		}()
+	}
+
 	// call the command
 	res := i.root.Call(req)
 
