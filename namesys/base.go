@@ -20,6 +20,9 @@ type resolver interface {
 
 // resolve is a helper for implementing Resolver.Resolve using resolveOnce.
 func resolve(ctx context.Context, r resolver, name string, depth int, prefixes ...string) (path.Path, error) {
+	if depth == 0 {
+		depth = 32
+	}
 	for {
 		p, err := r.resolveOnce(ctx, name)
 		if err != nil {
