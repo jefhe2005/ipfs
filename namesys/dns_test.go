@@ -1,8 +1,23 @@
 package namesys
 
 import (
+	"fmt"
 	"testing"
+
+	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 )
+
+type mockDNS struct {
+	entries map[string][]string
+}
+
+func (m *mockDNS) lookupTXT(name string) (txt []string, err error) {
+	txt, ok := m.entries[name]
+	if !ok {
+		return nil, fmt.Errorf("No TXT entry for %s", name)
+	}
+	return txt, nil
+}
 
 func TestDnsEntryParsing(t *testing.T) {
 	goodEntries := []string{
@@ -39,4 +54,75 @@ func TestDnsEntryParsing(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+}
+
+func newMockDNS() *mockDNS {
+	return &mockDNS{
+		entries: map[string][]string{
+			"multihash.example.com": []string{
+				"dnslink=QmY3hE8xgFCjGcz6PHgnvJz5HZi1BaKRfPkn1ghZUcYMjD",
+			},
+			"ipfs.example.com": []string{
+				"dnslink=/ipfs/QmY3hE8xgFCjGcz6PHgnvJz5HZi1BaKRfPkn1ghZUcYMjD",
+			},
+			"dns1.example.com": []string{
+				"dnslink=/ipns/ipfs.example.com",
+			},
+			"dns2.example.com": []string{
+				"dnslink=/ipns/dns1.example.com",
+			},
+			"multi.example.com": []string{
+				"some stuff",
+				"dnslink=/ipns/dns1.example.com",
+				"masked dnslink=/ipns/example.invalid",
+			},
+			"equals.example.com": []string{
+				"dnslink=/ipfs/QmY3hE8xgFCjGcz6PHgnvJz5HZi1BaKRfPkn1ghZUcYMjD/=equals",
+			},
+			"loop1.example.com": []string{
+				"dnslink=/ipns/loop2.example.com",
+			},
+			"loop2.example.com": []string{
+				"dnslink=/ipns/loop1.example.com",
+			},
+			"bad.example.com": []string{
+				"dnslink=",
+			},
+		},
+	}
+}
+
+func testDNSResolution(t *testing.T, resolver Resolver, name string, depth int, expected string, expError error) {
+	p, err := resolver.Resolve(context.TODO(), name, depth)
+	if err != expError {
+		t.Fatal(fmt.Errorf(
+			"Expected %s with a depth of %d to have a '%s' error, but got '%s'",
+			name, depth, expError, err))
+	}
+	if p.String() != expected {
+		t.Fatal(fmt.Errorf(
+			"%s with depth %d resolved to %s != %s",
+			name, depth, p.String(), expected))
+	}
+}
+
+func TestDnsResolution(t *testing.T) {
+	mock := newMockDNS()
+	r := &DNSResolver{lookupTXT: mock.lookupTXT}
+	testDNSResolution(t, r, "multihash.example.com", 0, "/ipfs/QmY3hE8xgFCjGcz6PHgnvJz5HZi1BaKRfPkn1ghZUcYMjD", nil)
+	testDNSResolution(t, r, "ipfs.example.com", 0, "/ipfs/QmY3hE8xgFCjGcz6PHgnvJz5HZi1BaKRfPkn1ghZUcYMjD", nil)
+	testDNSResolution(t, r, "dns1.example.com", 0, "/ipfs/QmY3hE8xgFCjGcz6PHgnvJz5HZi1BaKRfPkn1ghZUcYMjD", nil)
+	testDNSResolution(t, r, "dns1.example.com", 1, "/ipns/ipfs.example.com", ErrResolveRecursion)
+	testDNSResolution(t, r, "dns2.example.com", 0, "/ipfs/QmY3hE8xgFCjGcz6PHgnvJz5HZi1BaKRfPkn1ghZUcYMjD", nil)
+	testDNSResolution(t, r, "dns2.example.com", 1, "/ipns/dns1.example.com", ErrResolveRecursion)
+	testDNSResolution(t, r, "dns2.example.com", 2, "/ipns/ipfs.example.com", ErrResolveRecursion)
+	testDNSResolution(t, r, "multi.example.com", 0, "/ipfs/QmY3hE8xgFCjGcz6PHgnvJz5HZi1BaKRfPkn1ghZUcYMjD", nil)
+	testDNSResolution(t, r, "multi.example.com", 1, "/ipns/dns1.example.com", ErrResolveRecursion)
+	testDNSResolution(t, r, "multi.example.com", 2, "/ipns/ipfs.example.com", ErrResolveRecursion)
+	testDNSResolution(t, r, "equals.example.com", 0, "/ipfs/QmY3hE8xgFCjGcz6PHgnvJz5HZi1BaKRfPkn1ghZUcYMjD/=equals", nil)
+	testDNSResolution(t, r, "loop1.example.com", 1, "/ipns/loop2.example.com", ErrResolveRecursion)
+	testDNSResolution(t, r, "loop1.example.com", 2, "/ipns/loop1.example.com", ErrResolveRecursion)
+	testDNSResolution(t, r, "loop1.example.com", 3, "/ipns/loop2.example.com", ErrResolveRecursion)
+	testDNSResolution(t, r, "loop1.example.com", 0, "/ipns/loop1.example.com", ErrResolveRecursion)
+	testDNSResolution(t, r, "bad.example.com", 0, "", ErrResolveFailed)
 }
