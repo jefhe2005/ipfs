@@ -113,6 +113,16 @@ func TestLargeFile(t *testing.T) {
 	PerformDistributionTest(t, numInstances, numBlocks)
 }
 
+func TestLargeFileTwoPeers(t *testing.T) {
+	if testing.Short() {
+		t.SkipNow()
+	}
+	t.Parallel()
+	numInstances := 2
+	numBlocks := 100
+	PerformDistributionTest(t, numInstances, numBlocks)
+}
+
 func PerformDistributionTest(t *testing.T, numInstances, numBlocks int) {
 	if testing.Short() {
 		t.SkipNow()
@@ -121,8 +131,6 @@ func PerformDistributionTest(t *testing.T, numInstances, numBlocks int) {
 	sg := NewTestSessionGenerator(net)
 	defer sg.Close()
 	bg := blocksutil.NewBlockGenerator()
-
-	t.Log("Test a few nodes trying to get one file with a lot of blocks")
 
 	instances := sg.Instances(numInstances)
 	blocks := bg.Blocks(numBlocks)
@@ -231,7 +239,7 @@ func TestBasicBitswap(t *testing.T) {
 	defer sg.Close()
 	bg := blocksutil.NewBlockGenerator()
 
-	t.Log("Test a few nodes trying to get one file with a lot of blocks")
+	t.Log("Test a one node trying to get one block from another")
 
 	instances := sg.Instances(2)
 	blocks := bg.Blocks(1)
