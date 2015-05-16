@@ -2,6 +2,7 @@ package namesys
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"strings"
 
@@ -25,27 +26,21 @@ func NewDNSResolver() Resolver {
 	return &DNSResolver{lookupTXT: net.LookupTXT}
 }
 
-// NewDNSResolver constructs a name resolver using DNS TXT records,
-// returning a resolver instead of NewDNSResolver's Resolver.
-func newDNSResolver() resolver {
-	return &DNSResolver{lookupTXT: net.LookupTXT}
-}
-
-// canResolve implements resolver.
-func (r *DNSResolver) canResolve(name string) bool {
+// CanResolve implements resolver.
+func (r *DNSResolver) CanResolve(name string) bool {
 	return isd.IsDomain(name)
 }
 
 // Resolve implements Resolver.
-func (r *DNSResolver) Resolve(ctx context.Context, name string, depth int) (path.Path, error) {
-	return resolve(ctx, r, name, depth, "/ipns/")
+func (r *DNSResolver) Resolve(ctx context.Context, name string) (path.Path, error) {
+	return resolve(ctx, r, name, defaultDepth, "/ipns/")
 }
 
 // resolveOnce implements resolver.
 // TXT records for a given domain name should contain a b58
 // encoded multihash.
-func (r *DNSResolver) resolveOnce(ctx context.Context, name string) (path.Path, error) {
-	ok := r.canResolve(name)
+func (r *DNSResolver) ResolveOnce(ctx context.Context, name string) (path.Path, error) {
+	ok := r.CanResolve(name)
 	if !ok {
 		return "", errors.New("not a valid domain name")
 	}
@@ -67,7 +62,9 @@ func (r *DNSResolver) resolveOnce(ctx context.Context, name string) (path.Path, 
 }
 
 func parseEntry(txt string) (path.Path, error) {
-	p, err := path.ParseKeyToPath(txt)  // bare IPFS multihashes
+	p, err := path.ParseKeyToPath(txt) // bare IPFS multihashes
+	fmt.Println(p)
+	fmt.Println(err)
 	if err == nil {
 		return p, nil
 	}

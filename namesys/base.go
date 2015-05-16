@@ -8,23 +8,17 @@ import (
 	path "github.com/ipfs/go-ipfs/path"
 )
 
-// resolver has the internal imlementation for per-protocol resolvers.
-type resolver interface {
+const (
+	defaultDepth = 32
+)
 
-	// resolveOnce looks up a name once (without recursion).
-	resolveOnce(ctx context.Context, name string) (value path.Path, err error)
-
-	// canResolve checks whether this Resolver can resolve a name
-	canResolve(name string) bool
-}
-
-// resolve is a helper for implementing Resolver.Resolve using resolveOnce.
-func resolve(ctx context.Context, r resolver, name string, depth int, prefixes ...string) (path.Path, error) {
-	if depth == 0 {
-		depth = 32
+// resolve is a helper for implementing Resolver.Resolve using ResolveOnce.
+func resolve(ctx context.Context, r Resolver, name string, depth int, prefixes ...string) (path.Path, error) {
+	if depth <= 0 {
+		depth = defaultDepth
 	}
 	for {
-		p, err := r.resolveOnce(ctx, name)
+		p, err := r.ResolveOnce(ctx, name)
 		if err != nil {
 			log.Warningf("Could not resolve %s", name)
 			return "", err
@@ -38,11 +32,6 @@ func resolve(ctx context.Context, r resolver, name string, depth int, prefixes .
 
 		if depth == 1 {
 			return p, ErrResolveRecursion
-		}
-
-		if !r.canResolve(name) {
-			log.Debugf("Cannot further resolve %s", name)
-			return p, nil
 		}
 
 		matched := false

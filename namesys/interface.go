@@ -34,8 +34,28 @@ type NameSystem interface {
 // Resolver is an object capable of resolving names.
 type Resolver interface {
 
-	// Resolve looks up a name, and returns the value previously published.
-	Resolve(ctx context.Context, name string, depth int) (value path.Path, err error)
+	// CanResolve checks whether this Resolver can resolve a name
+	CanResolve(name string) bool
+
+	// ResolveOnce performs a single lookup, returning the dereferenced
+	// path. For example, if ipfs.io has a DNS TXT record pointing to
+	//   /ipns/QmatmE9msSfkKxoffpHwNLNKgwZG8eT9Bud6YoPab52vpy
+	// that's what
+	// 	 ResolveOnce(ctx, "/ipns/ipfs.io")
+	// will return.
+	ResolveOnce(ctx context.Context, name string) (value path.Path, err error)
+
+	// Resolve performs a recursive lookup, returning the dereferenced
+	// path. For example, if ipfs.io has a DNS TXT record pointing to
+	//   /ipns/QmatmE9msSfkKxoffpHwNLNKgwZG8eT9Bud6YoPab52vpy
+	// and there is a DHT IPNS entry for
+	//   QmatmE9msSfkKxoffpHwNLNKgwZG8eT9Bud6YoPab52vpy
+	//    -> /ipfs/Qmcqtw8FfrVSBaRmbWwHxt3AuySBhJLcvmFYi3Lbc4xnwj
+	// then
+	//   Resolve(..., "/ipns/ipfs.io")
+	// will resolve both names, returning
+	// 	 /ipfs/Qmcqtw8FfrVSBaRmbWwHxt3AuySBhJLcvmFYi3Lbc4xnwj
+	Resolve(ctx context.Context, name string) (value path.Path, err error)
 }
 
 // Publisher is an object capable of publishing particular names.

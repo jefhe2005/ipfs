@@ -93,7 +93,7 @@ func newMockDNS() *mockDNS {
 }
 
 func testDNSResolution(t *testing.T, resolver Resolver, name string, depth int, expected string, expError error) {
-	p, err := resolver.Resolve(context.TODO(), name, depth)
+	p, err := resolve(context.TODO(), resolver, name, depth)
 	if err != expError {
 		t.Fatal(fmt.Errorf(
 			"Expected %s with a depth of %d to have a '%s' error, but got '%s'",

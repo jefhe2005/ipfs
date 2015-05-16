@@ -8,22 +8,30 @@ import (
 	path "github.com/ipfs/go-ipfs/path"
 )
 
-type ProquintResolver struct{}
+type ProquintResolver struct {
+	depth int
+}
 
-// canResolve implements resolver. Checks whether the name is a proquint string.
-func (r *ProquintResolver) canResolve(name string) bool {
+// NewProquintResolver constructs a name resolver using the proquint
+// encoding.
+func NewProquintResolver() Resolver {
+	return &ProquintResolver{depth: defaultDepth}
+}
+
+// CanResolve checks whether the name is a proquint string.
+func (r *ProquintResolver) CanResolve(name string) bool {
 	ok, err := proquint.IsProquint(name)
 	return err == nil && ok
 }
 
 // Resolve implements Resolver.
-func (r *ProquintResolver) Resolve(ctx context.Context, name string, depth int) (path.Path, error) {
-	return resolve(ctx, r, name, depth, "/ipns/")
+func (r *ProquintResolver) Resolve(ctx context.Context, name string) (path.Path, error) {
+	return resolve(ctx, r, name, defaultDepth, "/ipns/")
 }
 
-// resolveOnce implements resolver. Decodes the proquint string.
-func (r *ProquintResolver) resolveOnce(ctx context.Context, name string) (path.Path, error) {
-	ok := r.canResolve(name)
+// ResolveOnce implements resolver. Decodes the proquint string.
+func (r *ProquintResolver) ResolveOnce(ctx context.Context, name string) (path.Path, error) {
+	ok := r.CanResolve(name)
 	if !ok {
 		return "", errors.New("not a valid proquint string")
 	}

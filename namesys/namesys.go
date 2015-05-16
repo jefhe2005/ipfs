@@ -19,17 +19,17 @@ import (
 // It can only publish to: (a) ipfs routing naming.
 //
 type mpns struct {
-	resolvers map[string]resolver
+	resolvers  map[string]Resolver
 	publishers map[string]Publisher
 }
 
 // NewNameSystem will construct the IPFS naming system based on Routing
 func NewNameSystem(r routing.IpfsRouting) NameSystem {
 	return &mpns{
-		resolvers: map[string]resolver{
-			"dns": newDNSResolver(),
-			"proquint": new(ProquintResolver),
-			"dht": newRoutingResolver(r),
+		resolvers: map[string]Resolver{
+			"dns":      NewDNSResolver(),
+			"proquint": NewProquintResolver(),
+			"dht":      NewRoutingResolver(r),
 		},
 		publishers: map[string]Publisher{
 			"/ipns/": NewRoutingPublisher(r),
@@ -38,7 +38,7 @@ func NewNameSystem(r routing.IpfsRouting) NameSystem {
 }
 
 // Resolve implements Resolver.
-func (ns *mpns) Resolve(ctx context.Context, name string, depth int) (path.Path, error) {
+func (ns *mpns) Resolve(ctx context.Context, name string) (path.Path, error) {
 	if strings.HasPrefix(name, "/ipfs/") {
 		return path.ParsePath(name)
 	}
@@ -47,10 +47,10 @@ func (ns *mpns) Resolve(ctx context.Context, name string, depth int) (path.Path,
 		return path.ParsePath("/ipfs/" + name)
 	}
 
-	return resolve(ctx, ns, name, depth, "/ipns/")
+	return resolve(ctx, ns, name, defaultDepth, "/ipns/")
 }
 
-func (ns *mpns) getResolver(name string) (resolver, string, error) {
+func (ns *mpns) getResolver(name string) (Resolver, string, error) {
 	segments := strings.SplitN(name, "/", 3)
 	if len(segments) < 3 || segments[0] != "" {
 		log.Warningf("Invalid name syntax for %s", name)
@@ -58,7 +58,7 @@ func (ns *mpns) getResolver(name string) (resolver, string, error) {
 	}
 
 	for protocol, resolver := range ns.resolvers {
-		if resolver.canResolve(segments[2]) {
+		if resolver.CanResolve(segments[2]) {
 			log.Debugf("Resolving %s with %s", name, protocol)
 			return resolver, segments[2], nil
 		}
@@ -68,7 +68,7 @@ func (ns *mpns) getResolver(name string) (resolver, string, error) {
 }
 
 // resolveOnce implements resolver
-func (ns *mpns) resolveOnce(ctx context.Context, name string) (path.Path, error) {
+func (ns *mpns) ResolveOnce(ctx context.Context, name string) (path.Path, error) {
 	if !strings.HasPrefix(name, "/ipns/") {
 		name = "/ipns/" + name
 	}
@@ -76,16 +76,16 @@ func (ns *mpns) resolveOnce(ctx context.Context, name string) (path.Path, error)
 	if err != nil {
 		return "", err
 	}
-	return resolver.resolveOnce(ctx, subName);
+	return resolver.ResolveOnce(ctx, subName)
 }
 
-// canResolve implements resolver.
-func (ns *mpns) canResolve(name string) bool {
+// CanResolve implements resolver.
+func (ns *mpns) CanResolve(name string) bool {
 	resolver, subName, err := ns.getResolver(name)
 	if err != nil {
 		return false
 	}
-	return resolver.canResolve(subName);
+	return resolver.CanResolve(subName)
 }
 
 // Publish implements Publisher
