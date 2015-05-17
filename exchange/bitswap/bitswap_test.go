@@ -153,7 +153,6 @@ func PerformDistributionTest(t *testing.T, numInstances, numBlocks int) {
 			}
 			for _ = range outch {
 			}
-			log.Error("DONE")
 		}(inst)
 	}
 	wg.Wait()
