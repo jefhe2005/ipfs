@@ -2,6 +2,7 @@ package swarm
 
 import (
 	inet "github.com/ipfs/go-ipfs/p2p/net"
+	"time"
 
 	ps "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream"
 )
@@ -32,7 +33,10 @@ func (s *Stream) Read(p []byte) (n int, err error) {
 
 // Write writes bytes to a stream, flushing for each call.
 func (s *Stream) Write(p []byte) (n int, err error) {
-	return s.Stream().Write(p)
+	b := time.Now()
+	n, err = s.Stream().Write(p)
+	log.Errorf("stream write size %d took %s", n, time.Now().Sub(b))
+	return n, err
 }
 
 // Close closes the stream, indicating this side is finished

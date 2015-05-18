@@ -1,6 +1,8 @@
 package network
 
 import (
+	"time"
+
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	bsmsg "github.com/ipfs/go-ipfs/exchange/bitswap/message"
@@ -54,11 +56,13 @@ func (bsnet *impl) SendMessage(
 	p peer.ID,
 	outgoing bsmsg.BitSwapMessage) error {
 
+	tb := time.Now()
 	s, err := bsnet.newStreamToPeer(ctx, p)
 	if err != nil {
 		return err
 	}
 	defer s.Close()
+	log.Errorf("new stream to peer took %s", time.Now().Sub(tb))
 
 	if err := outgoing.ToNet(s); err != nil {
 		log.Debugf("error: %s", err)
@@ -66,31 +70,6 @@ func (bsnet *impl) SendMessage(
 	}
 
 	return err
-}
-
-func (bsnet *impl) SendRequest(
-	ctx context.Context,
-	p peer.ID,
-	outgoing bsmsg.BitSwapMessage) (bsmsg.BitSwapMessage, error) {
-
-	s, err := bsnet.newStreamToPeer(ctx, p)
-	if err != nil {
-		return nil, err
-	}
-	defer s.Close()
-
-	if err := outgoing.ToNet(s); err != nil {
-		log.Debugf("error: %s", err)
-		return nil, err
-	}
-
-	incoming, err := bsmsg.FromNet(s)
-	if err != nil {
-		log.Debugf("error: %s", err)
-		return incoming, err
-	}
-
-	return incoming, nil
 }
 
 func (bsnet *impl) SetDelegate(r Receiver) {

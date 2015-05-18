@@ -17,7 +17,8 @@ import (
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
 	ps "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream"
 	pst "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream/transport"
-	psy "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream/transport/yamux"
+	psm "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream/transport/muxado"
+	//psy "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream/transport/yamux"
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
@@ -26,8 +27,8 @@ var log = eventlog.Logger("swarm2")
 var PSTransport pst.Transport
 
 func init() {
-	tpt := *psy.DefaultTransport
-	tpt.MaxStreamWindowSize = 512 * 1024
+	tpt := *psm.DefaultTransport
+	tpt.MaxWindowSize = 512 * 1024
 	PSTransport = &tpt
 }
 

@@ -94,6 +94,7 @@ func (pm *WantManager) addEntries(ks []u.Key, cancel bool) {
 func (pm *WantManager) SendBlock(ctx context.Context, env *engine.Envelope) {
 	// Blocks need to be sent synchronously to maintain proper backpressure
 	// throughout the network stack
+	before := time.Now()
 	defer env.Sent()
 
 	msg := bsmsg.New(false)
@@ -103,6 +104,8 @@ func (pm *WantManager) SendBlock(ctx context.Context, env *engine.Envelope) {
 	if err != nil {
 		log.Error(err)
 	}
+	took := time.Now().Sub(before)
+	log.Errorf("send took %s", took)
 }
 
 func (pm *WantManager) startPeerHandler(p peer.ID) *msgQueue {

@@ -54,7 +54,7 @@ func (c *conn) IsClosed() bool {
 
 // OpenStream creates a new stream.
 func (c *conn) OpenStream() (pst.Stream, error) {
-	s, err := c.ms.Open()
+	s, err := c.ms.OpenStream()
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (c *conn) OpenStream() (pst.Stream, error) {
 // using given StreamHandler
 func (c *conn) Serve(handler pst.StreamHandler) {
 	for { // accept loop
-		s, err := c.ms.Accept()
+		s, err := c.ms.AcceptStream()
 		if err != nil {
 			return // err always means closed.
 		}
@@ -74,18 +74,21 @@ func (c *conn) Serve(handler pst.StreamHandler) {
 	}
 }
 
-type transport struct{}
+type Transport muxado.Config
 
 // Transport is a go-peerstream transport that constructs
 // spdystream-backed connections.
-var Transport = transport{}
+var DefaultTransport = (*Transport)(&muxado.Config{
+	MaxWindowSize: 512 * 1024,
+	AcceptBacklog: 256,
+})
 
-func (t transport) NewConn(nc net.Conn, isServer bool) (pst.Conn, error) {
+func (t Transport) NewConn(nc net.Conn, isServer bool) (pst.Conn, error) {
 	var s muxado.Session
 	if isServer {
-		s = muxado.Server(nc)
+		s = muxado.Server(nc, (*muxado.Config)(&t))
 	} else {
-		s = muxado.Client(nc)
+		s = muxado.Client(nc, (*muxado.Config)(&t))
 	}
 	cl := make(chan struct{})
 	go func() {
