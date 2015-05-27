@@ -1,10 +1,13 @@
 package peer
 
 import (
+	"bytes"
+	"net"
 	"sync"
 	"time"
 
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
+	manet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net"
 )
 
 const (
@@ -51,6 +54,18 @@ type addrSet map[string]expiringAddr
 type AddrManager struct {
 	addrmu sync.Mutex // guards addrs
 	addrs  map[ID]addrSet
+
+	filtermu sync.Mutex
+	filters  []filter
+}
+
+type filter struct {
+	addr net.IP
+	mask net.IPMask
+}
+
+func (f *filter) Filtered(ip net.IP) bool {
+	return bytes.Equal(ip.Mask(f.mask), f.addr.Mask(f.mask))
 }
 
 // ensures the AddrManager is initialized.
@@ -73,6 +88,35 @@ func (mgr *AddrManager) Peers() []ID {
 		pids = append(pids, pid)
 	}
 	return pids
+}
+
+func makeBitmask(bits int) net.IPMask {
+	var b []byte
+	for bits >= 8 {
+		b = append(b, 0xff)
+		bits -= 8
+	}
+
+	n := byte(0)
+	m := byte(0x80)
+	for bits > 0 {
+		n |= m
+		m /= 2
+		bits--
+	}
+	b = append(b, n)
+
+	return net.IPMask(b)
+}
+
+func (mgr *AddrManager) AddFilter(ip net.IP, bits int) {
+	mgr.filtermu.Lock()
+	m := makeBitmask(bits)
+	mgr.filters = append(mgr.filters, filter{
+		addr: ip,
+		mask: m,
+	})
+	mgr.filtermu.Unlock()
 }
 
 // AddAddr calls AddAddrs(p, []ma.Multiaddr{addr}, ttl)
@@ -176,6 +220,22 @@ func (mgr *AddrManager) Addrs(p ID) []ma.Multiaddr {
 		delete(maddrs, s)
 	}
 	return good
+}
+
+// DialAddrs returns all addresses for the given peer that we are allowed to dial
+func (mgr *AddrManager) DialAddrs(p ID) []ma.Multiaddr {
+	mgr.filtermu.Lock()
+	defer mgr.filtermu.Unlock()
+
+	var out []ma.Multiaddr
+	for _, a := range mgr.Addrs(p) {
+		good := true
+		for _, f := range mgr.filters {
+			// ???
+		}
+
+	}
+
 }
 
 // ClearAddresses removes all previously stored addresses
