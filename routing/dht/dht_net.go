@@ -11,6 +11,8 @@ import (
 
 	ggio "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/gogo/protobuf/io"
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
+
+	proto "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/gogo/protobuf/proto"
 )
 
 // handleNewStream implements the inet.StreamHandler
@@ -58,6 +60,11 @@ func (dht *IpfsDHT) handleNewMessage(s inet.Stream) {
 		return
 	}
 
+	err = verifyMessageSanity(rpmes)
+	if err != nil {
+		return
+	}
+
 	// send out response msg
 	if err := w.WriteMsg(rpmes); err != nil {
 		log.Debugf("send response error: %s", err)
@@ -65,6 +72,33 @@ func (dht *IpfsDHT) handleNewMessage(s inet.Stream) {
 	}
 
 	return
+}
+
+func verifyMessageSanity(mes *pb.Message) error {
+	var numcladdrs int
+	var numpraddrs int
+
+	numclpeers := len(mes.GetCloserPeers())
+	for _, p := range mes.GetCloserPeers() {
+		numcladdrs += len(p.GetAddrs())
+	}
+
+	numprpeers := len(mes.GetProviderPeers())
+	for _, p := range mes.GetProviderPeers() {
+		numpraddrs += len(p.GetAddrs())
+	}
+
+	out, err := proto.Marshal(mes)
+	if err != nil {
+		return err
+	}
+
+	if len(out) > 2000000 {
+		log.Error("GIANT MESSAGE ENCOUNTERED")
+		log.Error("%d closer peers with %d total addresses", numclpeers, numcladdrs)
+		log.Error("%d provider peers with %d total addresses", numprpeers, numpraddrs)
+	}
+	return nil
 }
 
 // sendRequest sends out a request, but also makes sure to
