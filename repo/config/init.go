@@ -77,13 +77,13 @@ func Init(out io.Writer, nBitsForKeypair int) (*Config, error) {
 }
 
 func datastoreConfig() (*Datastore, error) {
-	dspath, err := DataStorePath("")
+	dspath, err := PathRoot()
 	if err != nil {
 		return nil, err
 	}
 	return &Datastore{
 		Path: dspath,
-		Type: "leveldb",
+		Type: "flatds",
 	}, nil
 }
 

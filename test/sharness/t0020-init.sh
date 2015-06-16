@@ -53,7 +53,7 @@ test_expect_success ".ipfs/ has been created" '
 '
 
 test_expect_success "ipfs config succeeds" '
-	echo leveldb >expected_config &&
+	echo flatds >expected_config &&
 	ipfs config Datastore.Type >actual_config &&
 	test_cmp expected_config actual_config
 '

@@ -15,6 +15,7 @@ import (
 	levelds "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/leveldb"
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/measure"
 	"github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/mount"
+	dsync "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-datastore/sync"
 	ldbopts "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/syndtr/goleveldb/leveldb/opt"
 	repo "github.com/ipfs/go-ipfs/repo"
 	"github.com/ipfs/go-ipfs/repo/common"
@@ -93,10 +94,8 @@ type FSRepo struct {
 	lockfile io.Closer
 	config   *config.Config
 	ds       ds.ThreadSafeDatastore
-	// tracked separately for use in Close; do not use directly.
-	leveldbDS      levelds.Datastore
-	metricsBlocks  measure.DatastoreCloser
-	metricsLevelDB measure.DatastoreCloser
+
+	closeFunc func() error
 }
 
 var _ repo.Repo = (*FSRepo)(nil)
@@ -309,14 +308,33 @@ func (r *FSRepo) openConfig() error {
 
 // openDatastore returns an error if the config file is not present.
 func (r *FSRepo) openDatastore() error {
-	leveldbPath := path.Join(r.path, leveldbDirectory)
-	var err error
-	// save leveldb reference so it can be neatly closed afterward
-	r.leveldbDS, err = levelds.NewDatastore(leveldbPath, &levelds.Options{
+	switch r.config.Datastore.Type {
+	case "flatds":
+		ds, doClose, err := openFSDatastore(r.config.Datastore.Path, r.config.Identity.PeerID)
+		if err != nil {
+			return err
+		}
+		r.ds = ds
+		r.closeFunc = doClose
+		return nil
+
+	case "memory":
+		r.ds = dsync.MutexWrap(ds.NewMapDatastore())
+		r.closeFunc = func() error { return nil }
+		return nil
+	default:
+		return errors.New("unsupported datastore option")
+	}
+}
+
+func openFSDatastore(p string, pid string) (ds.ThreadSafeDatastore, func() error, error) {
+	leveldbPath := path.Join(p, leveldbDirectory)
+
+	leveldbDS, err := levelds.NewDatastore(leveldbPath, &levelds.Options{
 		Compression: ldbopts.NoCompression,
 	})
 	if err != nil {
-		return errors.New("unable to open leveldb datastore")
+		return nil, nil, errors.New("unable to open leveldb datastore")
 	}
 
 	// 4TB of 256kB objects ~=17M objects, splitting that 256-way
@@ -327,42 +345,54 @@ func (r *FSRepo) openDatastore() error {
 	// including "/" from datastore.Key and 2 bytes from multihash. To
 	// reach a uniform 256-way split, we need approximately 4 bytes of
 	// prefix.
-	blocksDS, err := flatfs.New(path.Join(r.path, flatfsDirectory), 4)
+	blocksDS, err := flatfs.New(path.Join(p, flatfsDirectory), 4)
 	if err != nil {
-		return errors.New("unable to open flatfs datastore")
+		return nil, nil, errors.New("unable to open flatfs datastore")
 	}
 
 	// Add our PeerID to metrics paths to keep them unique
-	//
-	// As some tests just pass a zero-value Config to fsrepo.Init,
-	// cope with missing PeerID.
-	id := r.config.Identity.PeerID
-	if id == "" {
-		// the tests pass in a zero Config; cope with it
-		id = fmt.Sprintf("uninitialized_%p", r)
+	if pid == "" {
+		pid = fmt.Sprintf("unique_string%s", &p)
 	}
-	prefix := "fsrepo." + id + ".datastore."
-	r.metricsBlocks = measure.New(prefix+"blocks", blocksDS)
-	r.metricsLevelDB = measure.New(prefix+"leveldb", r.leveldbDS)
+
+	prefix := "fsrepo." + pid + ".datastore."
+	metricsBlocks := measure.New(prefix+"blocks", blocksDS)
+	metricsLevelDB := measure.New(prefix+"leveldb", leveldbDS)
 	mountDS := mount.New([]mount.Mount{
 		{
 			Prefix:    ds.NewKey("/blocks"),
-			Datastore: r.metricsBlocks,
+			Datastore: metricsBlocks,
 		},
 		{
 			Prefix:    ds.NewKey("/"),
-			Datastore: r.metricsLevelDB,
+			Datastore: metricsLevelDB,
 		},
 	})
+
+	doClose := func() error {
+		if err := metricsBlocks.Close(); err != nil {
+			return err
+		}
+
+		if err := metricsLevelDB.Close(); err != nil {
+			return err
+		}
+
+		if err := leveldbDS.Close(); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
 	// Make sure it's ok to claim the virtual datastore from mount as
 	// threadsafe. There's no clean way to make mount itself provide
 	// this information without copy-pasting the code into two
 	// variants. This is the same dilemma as the `[].byte` attempt at
 	// introducing const types to Go.
 	var _ ds.ThreadSafeDatastore = blocksDS
-	var _ ds.ThreadSafeDatastore = r.leveldbDS
-	r.ds = ds2.ClaimThreadSafe{mountDS}
-	return nil
+	var _ ds.ThreadSafeDatastore = leveldbDS
+	return ds2.ClaimThreadSafe{mountDS}, doClose, nil
 }
 
 func configureEventLoggerAtRepoPath(c *config.Config, repoPath string) {
@@ -386,13 +416,8 @@ func (r *FSRepo) Close() error {
 		return errors.New("repo is closed")
 	}
 
-	if err := r.metricsBlocks.Close(); err != nil {
-		return err
-	}
-	if err := r.metricsLevelDB.Close(); err != nil {
-		return err
-	}
-	if err := r.leveldbDS.Close(); err != nil {
+	err := r.closeFunc()
+	if err != nil {
 		return err
 	}
 
