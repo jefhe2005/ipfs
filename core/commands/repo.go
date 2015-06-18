@@ -55,11 +55,11 @@ order to reclaim hard disk space.
 		go func() {
 			defer close(outChan)
 			for k := range gcOutChan {
-				outChan <- k
+				outChan <- k.Key.Pretty()
 			}
 		}()
 	},
-	Type: corerepo.KeyRemoved{},
+	Type: "",
 	Marshalers: cmds.MarshalerMap{
 		cmds.Text: func(res cmds.Response) (io.Reader, error) {
 			outChan, ok := res.Output().(<-chan interface{})
@@ -73,16 +73,16 @@ order to reclaim hard disk space.
 			}
 
 			marshal := func(v interface{}) (io.Reader, error) {
-				obj, ok := v.(*corerepo.KeyRemoved)
+				obj, ok := v.(string)
 				if !ok {
 					return nil, u.ErrCast()
 				}
 
 				buf := new(bytes.Buffer)
 				if quiet {
-					buf = bytes.NewBufferString(string(obj.Key) + "\n")
+					buf = bytes.NewBufferString(obj + "\n")
 				} else {
-					buf = bytes.NewBufferString(fmt.Sprintf("removed %s\n", obj.Key))
+					buf = bytes.NewBufferString(fmt.Sprintf("removed %s\n", obj))
 				}
 				return buf, nil
 			}

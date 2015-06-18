@@ -32,6 +32,8 @@ var DhtCmd = &cmds.Command{
 	},
 }
 
+type QueryOutput notif.QueryEvent
+
 var queryDhtCmd = &cmds.Command{
 	Helptext: cmds.HelpText{
 		Tagline:          "Run a 'findClosestPeers' query through the DHT",
@@ -134,7 +136,7 @@ var queryDhtCmd = &cmds.Command{
 			}, nil
 		},
 	},
-	Type: notif.QueryEvent{},
+	Type: QueryOutput{},
 }
 
 var findProvidersDhtCmd = &cmds.Command{
@@ -252,7 +254,7 @@ FindProviders will return a list of peers who are able to provide the value requ
 			}, nil
 		},
 	},
-	Type: notif.QueryEvent{},
+	Type: QueryOutput{},
 }
 
 var findPeerDhtCmd = &cmds.Command{
@@ -357,7 +359,7 @@ var findPeerDhtCmd = &cmds.Command{
 			}, nil
 		},
 	},
-	Type: notif.QueryEvent{},
+	Type: QueryOutput{},
 }
 
 var getValueDhtCmd = &cmds.Command{
@@ -464,7 +466,7 @@ GetValue will return the value stored in the dht at the given key.
 			}, nil
 		},
 	},
-	Type: notif.QueryEvent{},
+	Type: QueryOutput{},
 }
 
 var putValueDhtCmd = &cmds.Command{
@@ -574,5 +576,5 @@ PutValue will store the given key value pair in the dht.
 			}, nil
 		},
 	},
-	Type: notif.QueryEvent{},
+	Type: QueryOutput{},
 }
