@@ -8,7 +8,7 @@ test_description="Test add and cat commands"
 
 . lib/test-lib.sh
 
-test_add_skip() {
+test_add_skip_hidden() {
 
 	test_expect_success "'ipfs add -r' with hidden file succeeds" '
 		mkdir -p mountdir/planets/.asteroids &&
@@ -24,7 +24,7 @@ test_add_skip() {
 	test_expect_success "'ipfs add -r' did not include . files" '
 		echo "added QmZy3khu7qf696i5HtkgL2NotsCZ8wzvNZJ1eUdA5n8KaV mountdir/planets/mars.txt
 added QmQnv4m3Q5512zgVtpbJ9z85osQrzZzGRn934AGh6iVEXz mountdir/planets/venus.txt
-added QmR8nD1Vzk5twWVC6oShTHvv7mMYkVh6dApCByBJyV2oj3 mountdir/planets" >expected
+added QmR8nD1Vzk5twWVC6oShTHvv7mMYkVh6dApCByBJyV2oj3 mountdir/planets" >expected &&
 		test_cmp expected actual
 	'
 
@@ -44,15 +44,72 @@ added QmetajtFdmzhWYodAsZoVZSiqpeJDAiaw2NwbM3xcWcpDj mountdir/planets" >expected
 		test_cmp expected actual
 	'
 
+	test_expect_success "'remove planets dir' succeeds" '
+		rm -rf mountdir/planets
+	'
+
+}
+
+test_add_skip_ignore() {
+
+	test_expect_success "'ipfs add -r' should succeed" '
+		mkdir -p mountdir/planets &&
+		echo "Hello Mars" >mountdir/planets/mars.txt &&
+		echo "Hello Venus" >mountdir/planets/venus.txt &&
+		echo "ignore*" >mountdir/planets/.ipfsignore &&
+		echo "this file should be ignored" >mountdir/planets/ignore_me.txt &&
+		ipfs add -r mountdir/planets >actual
+  '
+
+	test_expect_success "'ipfs add -r' respects .ipfsignore in active folder" '
+		echo "added QmZy3khu7qf696i5HtkgL2NotsCZ8wzvNZJ1eUdA5n8KaV mountdir/planets/mars.txt
+added QmQnv4m3Q5512zgVtpbJ9z85osQrzZzGRn934AGh6iVEXz mountdir/planets/venus.txt
+added QmR8nD1Vzk5twWVC6oShTHvv7mMYkVh6dApCByBJyV2oj3 mountdir/planets" >expected &&
+		test_cmp expected actual
+	'
+
+	test_expect_success "'ipfs add -r' respects... succeeded" '
+		mkdir -p mountdir/planets/moons &&
+		echo "mars*" >mountdir/.ipfsignore &&
+		echo "ignore*" >mountdir/planets/.ipfsignore &&
+		echo "europa*" >mountdir/planets/moons/.ipfsignore &&
+		echo "Hello Mars" >mountdir/planets/mars.txt &&
+		echo "Hello Venus" >mountdir/planets/venus.txt &&
+		echo "Hello IO" >mountdir/planets/moons/io.txt &&
+		echo "Hello Europa" >mountdir/planets/moons/europa.txt &&
+		echo "this file should be ignored" >mountdir/planets/ignore_me.txt &&
+		ipfs add -r mountdir/planets > recursive_ignore
+	'
+
+	test_expect_success "'ipfs add -r' respects root .ipfsignore files" '
+		echo "added Qmc5bCQDyABcQWLDU7Q25yr3cJ3BLAbTRej4U8g4RqKbeE mountdir/planets/moons/io.txt
+added QmcLVptZSfjVKBSCND7pZotAZ9oxRZ25m33imH8YuGwv6z mountdir/planets/moons
+added QmQnv4m3Q5512zgVtpbJ9z85osQrzZzGRn934AGh6iVEXz mountdir/planets/venus.txt
+added Qme85NByZftwvZRcJ2PaGgURTzjBd5hry1aqudEpMsYJE3 mountdir/planets" >expected &&
+		test_cmp expected recursive_ignore
+	'
+
+	test_expect_success "'clean up' succeeds" '
+		rm -rf mountdir/planets &&
+		rm mountdir/.ipfsignore
+	'
+
 }
 
 # should work offline
 test_init_ipfs
-test_add_skip
+
+test_add_skip_hidden
+
+test_add_skip_ignore
 
 # should work online
 test_launch_ipfs_daemon
-test_add_skip
+
+test_add_skip_hidden
+
+test_add_skip_ignore
+
 test_kill_ipfs_daemon
 
 test_done
