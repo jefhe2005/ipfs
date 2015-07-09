@@ -96,6 +96,42 @@ added Qme85NByZftwvZRcJ2PaGgURTzjBd5hry1aqudEpMsYJE3 mountdir/planets" >expected
 
 }
 
+
+test_add_skip_both() {
+
+	test_expect_success "'ipfs add -r' succeeds" '
+		mkdir -p temp &&
+		mkdir temp/aa &&
+		mkdir temp/bb &&
+		cd temp &&
+		echo ".a" >.a &&
+		echo ".b" >.b &&
+		echo "a" >a &&
+		echo "b" >b &&
+		echo "aa/a" >aa/a &&
+		echo "aa/b" >aa/b &&
+		echo "bb/a" >bb/a &&
+		echo "bb/b" >bb/b &&
+		echo "b" >.ipfsignore &&
+		echo "a" > bb/.ipfsignore &&
+		ipfs add -r . >../actual
+	'
+
+	test_expect_success "'ipfs add -r' output is correct" '
+		echo "added Qmbvkmk9LFsGneteXk3G7YLqtLVME566ho6ibaQZZVHaC9 a
+added QmcvHUkkpNnLh9NJxLURtXCzmZjgHnbbT2s2HbfcMAYFiM aa/a
+added Qme4gwxMqWA5HvepSFBawHaWXkFWuDwBJ95HuccsnGRENN aa
+added QmNuASe93XJRMzoyLLVPCQimdCNRusfAGAojBCvjVyRVWv ." >../expected &&
+		test_cmp ../expected ../actual
+	'
+
+	test_expect_success "'clean up' succeeds" '
+		cd .. &&
+		rm -rf temp
+	'
+
+}
+
 # should work offline
 test_init_ipfs
 
@@ -103,12 +139,16 @@ test_add_skip_hidden
 
 test_add_skip_ignore
 
+test_add_skip_both
+
 # should work online
 test_launch_ipfs_daemon
 
 test_add_skip_hidden
 
 test_add_skip_ignore
+
+test_add_skip_both
 
 test_kill_ipfs_daemon
 
