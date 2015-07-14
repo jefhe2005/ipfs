@@ -55,9 +55,9 @@ func (s *stream) Conn() inet.Conn {
 // transport will grab message arrival times, wait until that time, and
 // then write the message out when it is scheduled to arrive
 func (s *stream) transport() {
-	bufsize := 256
+	bufsize := 1
 	buf := new(bytes.Buffer)
-	ticker := time.NewTicker(time.Millisecond * 4)
+	ticker := time.NewTicker(time.Second * 40)
 loop:
 	for {
 		select {
