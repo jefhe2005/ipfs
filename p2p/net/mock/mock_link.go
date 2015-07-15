@@ -62,11 +62,8 @@ func (l *link) newStreamPair() (*stream, *stream) {
 	r1, w1 := io.Pipe()
 	r2, w2 := io.Pipe()
 
-	s1 := newStream(w2, r1)
-	s2 := newStream(w1, r2)
-
-	go s1.transport()
-	go s2.transport()
+	s1 := NewStream(w2, r1)
+	s2 := NewStream(w1, r2)
 	return s1, s2
 }
 
@@ -107,13 +104,4 @@ func (l *link) GetLatency() time.Duration {
 
 func (l *link) RateLimit(dataSize int) time.Duration {
 	return l.ratelimiter.Limit(dataSize)
-}
-
-func newStream(w io.Writer, r io.Reader) *stream {
-	return &stream{
-		Reader:    r,
-		Writer:    w,
-		toDeliver: make(chan *transportObject),
-		done:      make(chan bool),
-	}
 }
