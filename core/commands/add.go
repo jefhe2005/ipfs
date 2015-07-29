@@ -58,7 +58,7 @@ remains to be implemented.
 		cmds.BoolOption(quietOptionName, "q", "Write minimal output"),
 		cmds.BoolOption(progressOptionName, "p", "Stream progress data"),
 		cmds.BoolOption(trickleOptionName, "t", "Use trickle-dag format for dag generation"),
-		cmds.BoolOption(onlyHashOptionName, "n", "Only chunk and hash - do not write to disk"),
+		cmds.BoolOption(onlyHashOptionName, "y", "Only chunk and hash - do not write to disk"),
 		cmds.BoolOption(wrapOptionName, "w", "Wrap files with a directory object"),
 		cmds.BoolOption(hiddenOptionName, "Include files that are hidden"),
 	},
