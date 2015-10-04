@@ -117,7 +117,7 @@ func (d *Dialer) rawConnDial(ctx context.Context, raddr ma.Multiaddr, remote pee
 	// make a copy of the manet.Dialer, we may need to change its timeout.
 	madialer := d.Dialer
 
-	if laddr != nil && reuseportIsAvailable() {
+	if laddr != nil && isTcpMultiaddr(raddr) && reuseportIsAvailable() {
 		// we're perhaps going to dial twice. half the timeout, so we can afford to.
 		// otherwise our context would expire right after the first dial.
 		madialer.Dialer.Timeout = (madialer.Dialer.Timeout / 2)
@@ -143,9 +143,15 @@ func (d *Dialer) rawConnDial(ctx context.Context, raddr ma.Multiaddr, remote pee
 			rpev.Done()
 		}
 	}
+	madialer.LocalAddr = nil
 
 	defer log.EventBegin(ctx, "connDialManet", logdial).Done()
 	return madialer.Dial(raddr)
+}
+
+func isTcpMultiaddr(a ma.Multiaddr) bool {
+	p := a.Protocols()
+	return len(p) == 2 && (p[0].Name == "ip4" || p[0].Name == "ip6") && p[1].Name == "tcp"
 }
 
 func reuseDial(dialer net.Dialer, laddr, raddr ma.Multiaddr) (conn net.Conn, retry bool, err error) {
