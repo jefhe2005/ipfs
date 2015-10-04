@@ -144,7 +144,16 @@ func (d *Dialer) rawConnDial(ctx context.Context, raddr ma.Multiaddr, remote pee
 		}
 	}
 
+	useLocalAddr := true
+	for _, p := range raddr.Protocols() {
+		if p.Name == "utp" {
+			useLocalAddr = false
+		}
+	}
 	defer log.EventBegin(ctx, "connDialManet", logdial).Done()
+	if !useLocalAddr {
+		madialer.LocalAddr = nil
+	}
 	return madialer.Dial(raddr)
 }
 
