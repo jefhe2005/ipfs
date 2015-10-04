@@ -143,7 +143,6 @@ func (d *Dialer) rawConnDial(ctx context.Context, raddr ma.Multiaddr, remote pee
 			rpev.Done()
 		}
 	}
-	madialer.LocalAddr = nil
 
 	defer log.EventBegin(ctx, "connDialManet", logdial).Done()
 	return madialer.Dial(raddr)

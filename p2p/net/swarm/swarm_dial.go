@@ -4,18 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"net"
 	"sync"
 	"time"
 
-	mconn "github.com/ipfs/go-ipfs/metrics/conn"
 	conn "github.com/ipfs/go-ipfs/p2p/net/conn"
 	addrutil "github.com/ipfs/go-ipfs/p2p/net/swarm/addr"
 	peer "github.com/ipfs/go-ipfs/p2p/peer"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
 
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
-	manet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net"
 	process "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess"
 	processctx "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess/context"
 	ratelimit "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess/ratelimit"
@@ -287,14 +284,6 @@ func (s *Swarm) dial(ctx context.Context, p peer.ID) (*Conn, error) {
 		log.Debug("Dial not given PrivateKey, so WILL NOT SECURE conn.")
 	}
 
-	// get our own addrs. try dialing out from our listener addresses (reusing ports)
-	// Note that using our peerstore's addresses here is incorrect, as that would
-	// include observed addresses. TODO: make peerstore's address book smarter.
-	localAddrs := s.ListenAddresses()
-	if len(localAddrs) == 0 {
-		log.Debug("Dialing out with no local addresses.")
-	}
-
 	// get remote peer addrs
 	remoteAddrs := s.peers.Addrs(p)
 	// make sure we can use the addresses.
@@ -319,23 +308,8 @@ func (s *Swarm) dial(ctx context.Context, p peer.ID) (*Conn, error) {
 		return nil, err
 	}
 
-	// open connection to peer
-	d := &conn.Dialer{
-		Dialer: manet.Dialer{
-			Dialer: net.Dialer{
-				Timeout: s.dialT,
-			},
-		},
-		LocalPeer:  s.local,
-		LocalAddrs: localAddrs,
-		PrivateKey: sk,
-		Wrapper: func(c manet.Conn) manet.Conn {
-			return mconn.WrapConn(s.bwc, c)
-		},
-	}
-
 	// try to get a connection to any addr
-	connC, err := s.dialAddrs(ctx, d, p, remoteAddrs)
+	connC, err := s.dialAddrs(ctx, p, remoteAddrs)
 	if err != nil {
 		logdial["error"] = err
 		return nil, err
@@ -355,7 +329,7 @@ func (s *Swarm) dial(ctx context.Context, p peer.ID) (*Conn, error) {
 	return swarmC, nil
 }
 
-func (s *Swarm) dialAddrs(ctx context.Context, d *conn.Dialer, p peer.ID, remoteAddrs []ma.Multiaddr) (conn.Conn, error) {
+func (s *Swarm) dialAddrs(ctx context.Context, p peer.ID, remoteAddrs []ma.Multiaddr) (conn.Conn, error) {
 
 	// try to connect to one of the peer's known addresses.
 	// we dial concurrently to each of the addresses, which:
@@ -373,7 +347,7 @@ func (s *Swarm) dialAddrs(ctx context.Context, d *conn.Dialer, p peer.ID, remote
 
 	// dialSingleAddr is used in the rate-limited async thing below.
 	dialSingleAddr := func(addr ma.Multiaddr) {
-		connC, err := s.dialAddr(ctx, d, p, addr)
+		connC, err := s.dialAddr(ctx, p, addr)
 
 		// check parent still wants our results
 		select {
@@ -435,10 +409,10 @@ func (s *Swarm) dialAddrs(ctx context.Context, d *conn.Dialer, p peer.ID, remote
 	return nil, exitErr
 }
 
-func (s *Swarm) dialAddr(ctx context.Context, d *conn.Dialer, p peer.ID, addr ma.Multiaddr) (conn.Conn, error) {
+func (s *Swarm) dialAddr(ctx context.Context, p peer.ID, addr ma.Multiaddr) (conn.Conn, error) {
 	log.Debugf("%s swarm dialing %s %s", s.local, p, addr)
 
-	connC, err := d.Dial(ctx, addr, p)
+	connC, err := s.dialer.Dial(ctx, addr, p)
 	if err != nil {
 		return nil, fmt.Errorf("%s --> %s dial attempt failed: %s", s.local, p, err)
 	}

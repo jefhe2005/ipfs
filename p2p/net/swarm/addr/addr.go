@@ -104,6 +104,7 @@ func AddrUsable(a ma.Multiaddr, partial bool) bool {
 				return false
 			}
 		}
+
 		return true
 	}
 
