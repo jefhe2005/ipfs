@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
-	"strings"
 	"syscall"
 
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
 	manet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net"
+	mautp "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net/utp"
 	reuseport "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-reuseport"
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 	lgbl "github.com/ipfs/go-ipfs/util/eventlog/loggables"
@@ -95,98 +95,28 @@ func (d *Dialer) Dial(ctx context.Context, raddr ma.Multiaddr, remote peer.ID) (
 	return connOut, nil
 }
 
+func (d *Dialer) AddDialer(pd ProtoDialer) {
+	d.Dialers = append(d.Dialers, pd)
+}
+
+// returns dialer that can dial the given address
+func (d *Dialer) subDialerForAddr(raddr ma.Multiaddr) ProtoDialer {
+	for _, pd := range d.Dialers {
+		if pd.Matches(raddr) {
+			return pd
+		}
+	}
+	return nil
+}
+
 // rawConnDial dials the underlying net.Conn + manet.Conns
 func (d *Dialer) rawConnDial(ctx context.Context, raddr ma.Multiaddr, remote peer.ID) (manet.Conn, error) {
-
-	// before doing anything, check we're going to be able to dial.
-	// we may not support the given address.
-	if _, _, err := manet.DialArgs(raddr); err != nil {
-		return nil, err
+	sd := d.subDialerForAddr(raddr)
+	if sd == nil {
+		return nil, fmt.Errorf("no dialer for %s", raddr)
 	}
 
-	if strings.HasPrefix(raddr.String(), "/ip4/0.0.0.0") {
-		log.Event(ctx, "connDialZeroAddr", lgbl.Dial("conn", d.LocalPeer, remote, nil, raddr))
-		return nil, fmt.Errorf("Attempted to connect to zero address: %s", raddr)
-	}
-
-	// get local addr to use.
-	laddr := pickLocalAddr(d.LocalAddrs, raddr)
-	logdial := lgbl.Dial("conn", d.LocalPeer, remote, laddr, raddr)
-	defer log.EventBegin(ctx, "connDialRawConn", logdial).Done()
-
-	// make a copy of the manet.Dialer, we may need to change its timeout.
-	madialer := d.Dialer
-
-	if laddr != nil && isTcpMultiaddr(raddr) && reuseportIsAvailable() {
-		// we're perhaps going to dial twice. half the timeout, so we can afford to.
-		// otherwise our context would expire right after the first dial.
-		madialer.Dialer.Timeout = (madialer.Dialer.Timeout / 2)
-
-		// dial using reuseport.Dialer, because we're probably reusing addrs.
-		// this is optimistic, as the reuseDial may fail to bind the port.
-		rpev := log.EventBegin(ctx, "connDialReusePort", logdial)
-		if nconn, retry, reuseErr := reuseDial(madialer.Dialer, laddr, raddr); reuseErr == nil {
-			// if it worked, wrap the raw net.Conn with our manet.Conn
-			logdial["reuseport"] = "success"
-			rpev.Done()
-			return manet.WrapNetConn(nconn)
-		} else if !retry {
-			// reuseDial is sure this is a legitimate dial failure, not a reuseport failure.
-			logdial["reuseport"] = "failure"
-			logdial["error"] = reuseErr
-			rpev.Done()
-			return nil, reuseErr
-		} else {
-			// this is a failure to reuse port. log it.
-			logdial["reuseport"] = "retry"
-			logdial["error"] = reuseErr
-			rpev.Done()
-		}
-	}
-
-	useLocalAddr := true
-	for _, p := range raddr.Protocols() {
-		if p.Name == "utp" {
-			useLocalAddr = false
-		}
-	}
-	defer log.EventBegin(ctx, "connDialManet", logdial).Done()
-	if !useLocalAddr {
-		madialer.LocalAddr = nil
-	}
-	return madialer.Dial(raddr)
-}
-
-func isTcpMultiaddr(a ma.Multiaddr) bool {
-	p := a.Protocols()
-	return len(p) == 2 && (p[0].Name == "ip4" || p[0].Name == "ip6") && p[1].Name == "tcp"
-}
-
-func reuseDial(dialer net.Dialer, laddr, raddr ma.Multiaddr) (conn net.Conn, retry bool, err error) {
-	if laddr == nil {
-		// if we're given no local address no sense in using reuseport to dial, dial out as usual.
-		return nil, true, reuseport.ErrReuseFailed
-	}
-
-	// give reuse.Dialer the manet.Dialer's Dialer.
-	// (wow, Dialer should've so been an interface...)
-	rd := reuseport.Dialer{dialer}
-
-	// get the local net.Addr manually
-	rd.D.LocalAddr, err = manet.ToNetAddr(laddr)
-	if err != nil {
-		return nil, true, err // something wrong with laddr. retry without.
-	}
-
-	// get the raddr dial args for rd.dial
-	network, netraddr, err := manet.DialArgs(raddr)
-	if err != nil {
-		return nil, true, err // something wrong with laddr. retry without.
-	}
-
-	// rd.Dial gets us a net.Conn with SO_REUSEPORT and SO_REUSEADDR set.
-	conn, err = rd.Dial(network, netraddr)
-	return conn, reuseErrShouldRetry(err), err // hey! it worked!
+	return sd.Dial(raddr)
 }
 
 // reuseErrShouldRetry diagnoses whether to retry after a reuse error.
@@ -278,4 +208,101 @@ func MultiaddrNetMatch(tgt ma.Multiaddr, srcs []ma.Multiaddr) ma.Multiaddr {
 		}
 	}
 	return nil
+}
+
+type ProtoDialer interface {
+	Dial(raddr ma.Multiaddr) (manet.Conn, error)
+	Matches(ma.Multiaddr) bool
+}
+
+type TcpReuseDialer struct {
+	laddr    ma.Multiaddr
+	rd       reuseport.Dialer
+	madialer manet.Dialer
+}
+
+func NewTcpReuseDialer(base manet.Dialer, laddr ma.Multiaddr) (*TcpReuseDialer, error) {
+	rd := reuseport.Dialer{base.Dialer}
+
+	// get the local net.Addr manually
+	la, err := manet.ToNetAddr(laddr)
+	if err != nil {
+		return nil, err // something wrong with laddr.
+	}
+
+	rd.D.LocalAddr = la
+
+	return &TcpReuseDialer{
+		laddr:    laddr,
+		rd:       rd,
+		madialer: base,
+	}, nil
+}
+
+func (d *TcpReuseDialer) Dial(raddr ma.Multiaddr) (manet.Conn, error) {
+	network, netraddr, err := manet.DialArgs(raddr)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := d.rd.Dial(network, netraddr)
+	if err == nil {
+		return manet.WrapNetConn(conn)
+	}
+	if !reuseErrShouldRetry(err) {
+		return nil, err
+	}
+
+	return d.madialer.Dial(raddr)
+}
+
+func (d *TcpReuseDialer) Matches(a ma.Multiaddr) bool {
+	return IsTcpMultiaddr(a)
+}
+
+func IsTcpMultiaddr(a ma.Multiaddr) bool {
+	p := a.Protocols()
+	return len(p) == 2 && (p[0].Name == "ip4" || p[0].Name == "ip6") && p[1].Name == "tcp"
+}
+
+func IsUtpMultiaddr(a ma.Multiaddr) bool {
+	p := a.Protocols()
+	return len(p) == 3 && p[2].Name == "utp"
+}
+
+type UtpReuseDialer struct {
+	d *mautp.Dialer
+}
+
+func NewUtpReuseDialer(d *mautp.Dialer) *UtpReuseDialer {
+	return &UtpReuseDialer{d}
+}
+
+func (d *UtpReuseDialer) Matches(a ma.Multiaddr) bool {
+	p := a.Protocols()
+	return len(p) == 3 && p[2].Name == "utp"
+}
+
+func (d *UtpReuseDialer) Dial(raddr ma.Multiaddr) (manet.Conn, error) {
+	network, netraddr, err := manet.DialArgs(raddr)
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := d.d.Dial(network, netraddr)
+	if err != nil {
+		return nil, err
+	}
+
+	return manet.WrapNetConn(c)
+}
+
+type BasicMaDialer struct{}
+
+func (d *BasicMaDialer) Dial(raddr ma.Multiaddr) (manet.Conn, error) {
+	return manet.Dial(raddr)
+}
+
+func (d *BasicMaDialer) Matches(a ma.Multiaddr) bool {
+	return true
 }

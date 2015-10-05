@@ -4,7 +4,6 @@ package swarm
 
 import (
 	"fmt"
-	"net"
 	"sync"
 	"time"
 
@@ -84,31 +83,23 @@ func NewSwarm(ctx context.Context, listenAddrs []ma.Multiaddr,
 		return nil, err
 	}
 
-	// open connection to peer
-	d := &conn.Dialer{
-		Dialer: manet.Dialer{
-			Dialer: net.Dialer{
-				Timeout: DialTimeout,
-			},
-		},
-		LocalPeer:  local,
-		LocalAddrs: listenAddrs,
-		PrivateKey: peers.PrivKey(local),
-		Wrapper: func(c manet.Conn) manet.Conn {
-			return mconn.WrapConn(bwc, c)
-		},
-	}
-
 	s := &Swarm{
 		swarm:   ps.NewSwarm(PSTransport),
 		local:   local,
 		peers:   peers,
 		ctx:     ctx,
-		dialer:  d,
 		dialT:   DialTimeout,
 		notifs:  make(map[inet.Notifiee]ps.Notifiee),
 		bwc:     bwc,
 		Filters: filter.NewFilters(),
+		dialer: &conn.Dialer{
+			LocalPeer:  local,
+			LocalAddrs: listenAddrs,
+			PrivateKey: peers.PrivKey(local),
+			Wrapper: func(c manet.Conn) manet.Conn {
+				return mconn.WrapConn(bwc, c)
+			},
+		},
 	}
 
 	// configure Swarm
@@ -119,7 +110,7 @@ func NewSwarm(ctx context.Context, listenAddrs []ma.Multiaddr,
 	prom.MustRegisterOrGet(peersTotal)
 	s.Notify((*metricsNotifiee)(s))
 
-	return s, s.listen(listenAddrs)
+	return s, s.setupAddresses(listenAddrs)
 }
 
 func (s *Swarm) teardown() error {
@@ -152,7 +143,7 @@ func (s *Swarm) Listen(addrs ...ma.Multiaddr) error {
 		return err
 	}
 
-	return s.listen(addrs)
+	return s.setupAddresses(addrs)
 }
 
 // Process returns the Process of the swarm
