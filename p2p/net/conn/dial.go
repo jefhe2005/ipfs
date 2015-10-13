@@ -210,19 +210,33 @@ func MultiaddrNetMatch(tgt ma.Multiaddr, srcs []ma.Multiaddr) ma.Multiaddr {
 	return nil
 }
 
+type Transport interface {
+	manet.Listener
+	ProtoDialer
+}
+
 type ProtoDialer interface {
 	Dial(raddr ma.Multiaddr) (manet.Conn, error)
 	Matches(ma.Multiaddr) bool
 }
 
-type TcpReuseDialer struct {
-	laddr    ma.Multiaddr
+type TcpReuseTransport struct {
+	list  manet.Listener
+	laddr ma.Multiaddr
+
 	rd       reuseport.Dialer
 	madialer manet.Dialer
 }
 
-func NewTcpReuseDialer(base manet.Dialer, laddr ma.Multiaddr) (*TcpReuseDialer, error) {
+var _ Transport = (*TcpReuseTransport)(nil)
+
+func NewTcpReuseTransport(base manet.Dialer, laddr ma.Multiaddr) (*TcpReuseTransport, error) {
 	rd := reuseport.Dialer{base.Dialer}
+
+	list, err := manet.Listen(laddr)
+	if err != nil {
+		return nil, err
+	}
 
 	// get the local net.Addr manually
 	la, err := manet.ToNetAddr(laddr)
@@ -232,14 +246,15 @@ func NewTcpReuseDialer(base manet.Dialer, laddr ma.Multiaddr) (*TcpReuseDialer, 
 
 	rd.D.LocalAddr = la
 
-	return &TcpReuseDialer{
+	return &TcpReuseTransport{
+		list:     list,
 		laddr:    laddr,
 		rd:       rd,
 		madialer: base,
 	}, nil
 }
 
-func (d *TcpReuseDialer) Dial(raddr ma.Multiaddr) (manet.Conn, error) {
+func (d *TcpReuseTransport) Dial(raddr ma.Multiaddr) (manet.Conn, error) {
 	network, netraddr, err := manet.DialArgs(raddr)
 	if err != nil {
 		return nil, err
@@ -256,8 +271,33 @@ func (d *TcpReuseDialer) Dial(raddr ma.Multiaddr) (manet.Conn, error) {
 	return d.madialer.Dial(raddr)
 }
 
-func (d *TcpReuseDialer) Matches(a ma.Multiaddr) bool {
+func (d *TcpReuseTransport) Matches(a ma.Multiaddr) bool {
 	return IsTcpMultiaddr(a)
+}
+
+func (d *TcpReuseTransport) Accept() (manet.Conn, error) {
+	c, err := d.list.Accept()
+	if err != nil {
+		return nil, err
+	}
+
+	return manet.WrapNetConn(c)
+}
+
+func (d *TcpReuseTransport) Addr() net.Addr {
+	return d.rd.D.LocalAddr
+}
+
+func (t *TcpReuseTransport) Multiaddr() ma.Multiaddr {
+	return t.laddr
+}
+
+func (t *TcpReuseTransport) NetListener() net.Listener {
+	return t.list.NetListener()
+}
+
+func (d *TcpReuseTransport) Close() error {
+	return d.list.Close()
 }
 
 func IsTcpMultiaddr(a ma.Multiaddr) bool {
@@ -270,31 +310,75 @@ func IsUtpMultiaddr(a ma.Multiaddr) bool {
 	return len(p) == 3 && p[2].Name == "utp"
 }
 
-type UtpReuseDialer struct {
-	d *mautp.Dialer
+type UtpReuseTransport struct {
+	s     *mautp.Socket
+	laddr ma.Multiaddr
 }
 
-func NewUtpReuseDialer(d *mautp.Dialer) *UtpReuseDialer {
-	return &UtpReuseDialer{d}
+func NewUtpReuseTransport(laddr ma.Multiaddr) (*UtpReuseTransport, error) {
+	network, addr, err := manet.DialArgs(laddr)
+	if err != nil {
+		return nil, err
+	}
+
+	us, err := mautp.NewSocket(network, addr)
+	if err != nil {
+		return nil, err
+	}
+
+	mmm, err := manet.FromNetAddr(us.Addr())
+	if err != nil {
+		return nil, err
+	}
+
+	return &UtpReuseTransport{
+		s:     us,
+		laddr: mmm,
+	}, nil
 }
 
-func (d *UtpReuseDialer) Matches(a ma.Multiaddr) bool {
+func (d *UtpReuseTransport) Matches(a ma.Multiaddr) bool {
 	p := a.Protocols()
 	return len(p) == 3 && p[2].Name == "utp"
 }
 
-func (d *UtpReuseDialer) Dial(raddr ma.Multiaddr) (manet.Conn, error) {
+func (d *UtpReuseTransport) Dial(raddr ma.Multiaddr) (manet.Conn, error) {
 	network, netraddr, err := manet.DialArgs(raddr)
 	if err != nil {
 		return nil, err
 	}
 
-	c, err := d.d.Dial(network, netraddr)
+	c, err := d.s.Dial(network, netraddr)
 	if err != nil {
 		return nil, err
 	}
 
 	return manet.WrapNetConn(c)
+}
+
+func (d *UtpReuseTransport) Accept() (manet.Conn, error) {
+	c, err := d.s.Accept()
+	if err != nil {
+		return nil, err
+	}
+
+	return manet.WrapNetConn(c)
+}
+
+func (t *UtpReuseTransport) Close() error {
+	return t.s.Close()
+}
+
+func (t *UtpReuseTransport) Addr() net.Addr {
+	return t.s.Addr()
+}
+
+func (t *UtpReuseTransport) Multiaddr() ma.Multiaddr {
+	return t.laddr
+}
+
+func (t *UtpReuseTransport) NetListener() net.Listener {
+	return t.s
 }
 
 type BasicMaDialer struct{}

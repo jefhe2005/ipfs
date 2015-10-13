@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/ipfs/go-ipfs",
-	"GoVersion": "go1.5",
+	"GoVersion": "go1.5.1",
 	"Packages": [
 		"./..."
 	],
@@ -183,7 +183,7 @@
 		},
 		{
 			"ImportPath": "github.com/jbenet/go-multiaddr-net",
-			"Rev": "811de2f63e25506a7d8d093dd46a69bd9548fc44"
+			"Rev": "9ddf10f895d6a5f8aedf6f6657e28ca6614ad7e9"
 		},
 		{
 			"ImportPath": "github.com/jbenet/go-multihash",

@@ -74,10 +74,10 @@ run_basic_test() {
 }
 
 test_expect_success "set up tcp testbed" '
-	iptb init -n 5 -p 0 -f --bootstrap=none
+	#iptb init -n 5 -p 0 -f --bootstrap=none
 '
 
-run_basic_test
+#run_basic_test
 
 test_expect_success "set up utp testbed" '
 	iptb init -n 5 -p 0 -f --bootstrap=none --utp

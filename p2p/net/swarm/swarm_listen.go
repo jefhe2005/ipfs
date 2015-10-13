@@ -12,7 +12,6 @@ import (
 
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
 	manet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net"
-	mautp "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net/utp"
 	ps "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-peerstream"
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 )
@@ -29,45 +28,28 @@ func (s *Swarm) setupAddresses(addrs []ma.Multiaddr) error {
 	for _, a := range addrs {
 		switch {
 		case conn.IsTcpMultiaddr(a):
-			rud, err := conn.NewTcpReuseDialer(dialer, a)
+			tpt, err := conn.NewTcpReuseTransport(dialer, a)
 			if err != nil {
 				return err
 			}
 
-			s.dialer.AddDialer(rud)
-
-			l, err := manet.Listen(a)
-			if err != nil {
-				return err
-			}
-
-			err = s.addListener(l)
+			s.dialer.AddDialer(tpt)
+			err = s.addListener(tpt)
 			if err != nil {
 				return err
 			}
 		case conn.IsUtpMultiaddr(a):
-			network, addr, err := manet.DialArgs(a)
+			tpt, err := conn.NewUtpReuseTransport(a)
 			if err != nil {
 				return err
 			}
 
-			list, err := mautp.Listen(network, addr)
+			s.dialer.AddDialer(tpt)
+			err = s.addListener(tpt)
 			if err != nil {
 				return err
 			}
 
-			malist, err := manet.WrapNetListener(list)
-			if err != nil {
-				return err
-			}
-
-			err = s.addListener(malist)
-			if err != nil {
-				return err
-			}
-
-			rud := conn.NewUtpReuseDialer(list.(*mautp.Listener).Dialer())
-			s.dialer.AddDialer(rud)
 		}
 	}
 	return nil
