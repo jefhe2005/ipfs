@@ -2,6 +2,8 @@ package addrutil
 
 import (
 	"fmt"
+	"sync"
+	"time"
 
 	logging "github.com/ipfs/go-ipfs/vendor/QmXJkcEXB6C9h6Ytb6rrUTFU56Ro62zxgrbxTT3dgjQGA8/go-log"
 
@@ -188,10 +190,25 @@ func ResolveUnspecifiedAddresses(unspecAddrs, ifaceAddrs []ma.Multiaddr) ([]ma.M
 	return outputAddrs, nil
 }
 
+const interfaceAddrCacheLife = time.Second * 5
+
+var interfaceAddrLastCache time.Time
+var interfaceAddrCache []ma.Multiaddr
+var interfaceAddrLock sync.Mutex
+
 // InterfaceAddresses returns a list of addresses associated with local machine
 // Note: we do not return link local addresses. IP loopback is ok, because we
 // may be connecting to other nodes in the same machine.
+// Addresses are cached for a short time as this method may be called very frequently
+// and syscalls can get expensive.
 func InterfaceAddresses() ([]ma.Multiaddr, error) {
+	interfaceAddrLock.Lock()
+	defer interfaceAddrLock.Unlock()
+	cacheAge := time.Now().Sub(interfaceAddrLastCache)
+	if interfaceAddrCache != nil && cacheAge < interfaceAddrCacheLife {
+		return interfaceAddrCache, nil
+	}
+
 	maddrs, err := manet.InterfaceMultiaddrs()
 	if err != nil {
 		return nil, err
@@ -209,6 +226,9 @@ func InterfaceAddresses() ([]ma.Multiaddr, error) {
 	}
 
 	log.Debug("InterfaceAddresses: usable:", out)
+
+	interfaceAddrCache = out
+	interfaceAddrLastCache = time.Now()
 	return out, nil
 }
 
