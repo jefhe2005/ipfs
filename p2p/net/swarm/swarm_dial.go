@@ -373,7 +373,6 @@ func (s *Swarm) dialAddrs(ctx context.Context, d *conn.Dialer, p peer.ID, remote
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel() // cancel work when we exit func
 
-	foundConn := make(chan struct{})
 	conns := make(chan conn.Conn)
 	errs := make(chan error, len(remoteAddrs))
 
@@ -397,7 +396,7 @@ func (s *Swarm) dialAddrs(ctx context.Context, d *conn.Dialer, p peer.ID, remote
 
 		// check parent still wants our results
 		select {
-		case <-foundConn:
+		case <-ctx.Done():
 			if connC != nil {
 				connC.Close()
 			}
@@ -413,50 +412,45 @@ func (s *Swarm) dialAddrs(ctx context.Context, d *conn.Dialer, p peer.ID, remote
 		// permute addrs so we try different sets first each time.
 		for _, addr := range remoteAddrs {
 			select {
-			case <-foundConn: // if one of them succeeded already
-				return
 			case <-ctx.Done(): // our context was cancelled
 				return
 			case limiter <- struct{}{}:
-				// continue
+				// take the token, move on
 			}
 
 			// returns whatever ratelimiting is acceptable for workerAddr.
 			// may not rate limit at all.
 			rl := s.addrDialRateLimit(addr)
 			select {
-			case <-foundConn: // if one of them succeeded already
-				return
 			case <-ctx.Done(): // our context was cancelled
 				return
 			case rl <- struct{}{}:
-				// continue
+				// take the token, move on
 			}
 
 			// we have to do the waiting concurrently because there are addrs
 			// that SHOULD NOT be rate limited (utp), nor blocked by other
 			// rate limited addrs (tcp).
 			go func(rlc <-chan struct{}, a ma.Multiaddr) {
-				defer func() {
-					<-limiter
-					<-rlc
-				}()
 				dialSingleAddr(a)
+				<-limiter
+				<-rlc
 			}(rl, addr)
-
 		}
 	}()
 
-	// wair fot the results.
+	// wair for the results.
 	exitErr := fmt.Errorf("failed to dial %s", p)
-	for i := 0; i < len(remoteAddrs); i++ {
+	for range remoteAddrs {
 		select {
 		case exitErr = <-errs: //
 			log.Debug("dial error: ", exitErr)
 		case connC := <-conns:
 			// take the first + return asap
-			close(foundConn)
 			return connC, nil
+		case <-ctx.Done():
+			// break out and return error
+			break
 		}
 	}
 	return nil, exitErr
