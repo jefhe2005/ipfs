@@ -2,6 +2,7 @@ package swarm
 
 import (
 	"net"
+	"sort"
 	"sync"
 	"testing"
 	"time"
@@ -436,5 +437,48 @@ func TestDialBackoffClears(t *testing.T) {
 		t.Error("s2 should no longer be on backoff")
 	} else {
 		t.Log("correctly cleared backoff")
+	}
+}
+
+func mkAddr(t *testing.T, s string) ma.Multiaddr {
+	a, err := ma.NewMultiaddr(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return a
+}
+
+func TestDockerAddrCheck(t *testing.T) {
+	a := mkAddr(t, "/ip4/172.17.2.65/tcp/3124")
+
+	if !isDefaultDockerRange(a) {
+		t.Fatal("expected to be in docker range check")
+	}
+}
+
+func TestAddressSorting(t *testing.T) {
+	u1 := mkAddr(t, "/ip4/152.12.23.53/udp/1234/utp")
+	local := mkAddr(t, "/ip4/127.0.0.1/tcp/1234")
+	norm := mkAddr(t, "/ip4/6.5.4.3/tcp/1234")
+	docker := mkAddr(t, "/ip4/172.17.4.3/tcp/1234")
+
+	l := AddrList{local, docker, u1, norm}
+	sort.Sort(l)
+
+	if !l[0].Equal(u1) {
+		t.Fatal("expected utp addr to be sorted first")
+	}
+
+	if !l[1].Equal(local) {
+		t.Fatal("expected localhost addr second")
+	}
+
+	if !l[2].Equal(norm) {
+		t.Fatal("expected normal addr before docker addr")
+	}
+
+	if !l[3].Equal(docker) {
+		t.Fatal("expected docker addr last")
 	}
 }

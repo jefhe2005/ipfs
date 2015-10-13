@@ -1,10 +1,12 @@
 package swarm
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
-	"math/rand"
 	"net"
+	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,9 +18,6 @@ import (
 
 	ma "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr"
 	manet "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/go-multiaddr-net"
-	process "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess"
-	processctx "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess/context"
-	ratelimit "github.com/ipfs/go-ipfs/Godeps/_workspace/src/github.com/jbenet/goprocess/ratelimit"
 	context "github.com/ipfs/go-ipfs/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
@@ -361,6 +360,9 @@ func (s *Swarm) dial(ctx context.Context, p peer.ID) (*Conn, error) {
 
 func (s *Swarm) dialAddrs(ctx context.Context, d *conn.Dialer, p peer.ID, remoteAddrs []ma.Multiaddr) (conn.Conn, error) {
 
+	// sort addresses so preferred addresses are dialed sooner
+	sort.Sort(AddrList(remoteAddrs))
+
 	// try to connect to one of the peer's known addresses.
 	// we dial concurrently to each of the addresses, which:
 	// * makes the process faster overall
@@ -372,12 +374,26 @@ func (s *Swarm) dialAddrs(ctx context.Context, d *conn.Dialer, p peer.ID, remote
 	defer cancel() // cancel work when we exit func
 
 	foundConn := make(chan struct{})
-	conns := make(chan conn.Conn, len(remoteAddrs))
+	conns := make(chan conn.Conn)
 	errs := make(chan error, len(remoteAddrs))
 
 	// dialSingleAddr is used in the rate-limited async thing below.
 	dialSingleAddr := func(addr ma.Multiaddr) {
+		// rebind chans in scope so we can nil them out easily
+		connsout := conns
+		errsout := errs
+
 		connC, err := s.dialAddr(ctx, d, p, addr)
+		if err != nil {
+			connsout = nil
+		} else if connC == nil {
+			// NOTE: this really should never happen
+			log.Errorf("failed to dial %s %s and got no error!", p, addr)
+			err = fmt.Errorf("failed to dial %s %s", p, addr)
+			connsout = nil
+		} else {
+			errsout = nil
+		}
 
 		// check parent still wants our results
 		select {
@@ -385,61 +401,50 @@ func (s *Swarm) dialAddrs(ctx context.Context, d *conn.Dialer, p peer.ID, remote
 			if connC != nil {
 				connC.Close()
 			}
-			return
-		default:
-		}
-
-		if err != nil {
-			errs <- err
-		} else if connC == nil {
-			errs <- fmt.Errorf("failed to dial %s %s", p, addr)
-		} else {
-			conns <- connC
+		case errsout <- err:
+		case connsout <- connC:
 		}
 	}
 
 	// this whole thing is in a goroutine so we can use foundConn
 	// to end early.
 	go func() {
-		// rate limiting just in case. at most 10 addrs at once.
-		limiter := ratelimit.NewRateLimiter(process.Background(), 8)
-		limiter.Go(func(worker process.Process) {
-			// permute addrs so we try different sets first each time.
-			for _, i := range rand.Perm(len(remoteAddrs)) {
-				select {
-				case <-foundConn: // if one of them succeeded already
-					break
-				case <-worker.Closing(): // our context was cancelled
-					break
-				default:
-				}
-
-				workerAddr := remoteAddrs[i] // shadow variable to avoid race
-
-				// we have to do the waiting concurrently because there are addrs
-				// that SHOULD NOT be rate limited (utp), nor blocked by other
-				// rate limited addrs (tcp).
-				//
-				// (and we need to call `limiter.Go`, instead of `go` as required
-				// by goproc/limiter semantics. note: limiter.Go is not LimitedGo.)
-				limiter.Go(func(p process.Process) {
-
-					// returns whatever ratelimiting is acceptable for workerAddr.
-					// may not rate limit at all.
-					rl := s.addrDialRateLimit(workerAddr)
-					rl <- struct{}{}
-
-					limiter.LimitedGo(func(worker process.Process) {
-						dialSingleAddr(workerAddr)
-					})
-
-					<-rl
-				})
-
+		limiter := make(chan struct{}, 8)
+		// permute addrs so we try different sets first each time.
+		for _, addr := range remoteAddrs {
+			select {
+			case <-foundConn: // if one of them succeeded already
+				return
+			case <-ctx.Done(): // our context was cancelled
+				return
+			case limiter <- struct{}{}:
+				// continue
 			}
-		})
 
-		processctx.CloseAfterContext(limiter, ctx)
+			// returns whatever ratelimiting is acceptable for workerAddr.
+			// may not rate limit at all.
+			rl := s.addrDialRateLimit(addr)
+			select {
+			case <-foundConn: // if one of them succeeded already
+				return
+			case <-ctx.Done(): // our context was cancelled
+				return
+			case rl <- struct{}{}:
+				// continue
+			}
+
+			// we have to do the waiting concurrently because there are addrs
+			// that SHOULD NOT be rate limited (utp), nor blocked by other
+			// rate limited addrs (tcp).
+			go func(rlc <-chan struct{}, a ma.Multiaddr) {
+				defer func() {
+					<-limiter
+					<-rlc
+				}()
+				dialSingleAddr(a)
+			}(rl, addr)
+
+		}
 	}()
 
 	// wair fot the results.
@@ -532,4 +537,64 @@ func isFDCostlyTransport(a ma.Multiaddr) bool {
 func isTCPMultiaddr(a ma.Multiaddr) bool {
 	p := a.Protocols()
 	return len(p) == 2 && (p[0].Name == "ip4" || p[0].Name == "ip6") && p[1].Name == "tcp"
+}
+
+func isDefaultDockerRange(a ma.Multiaddr) bool {
+	parts := strings.Split(a.String(), "/")
+	if len(parts) != 5 {
+		return false
+	}
+
+	if parts[1] == "ip4" && strings.HasPrefix(parts[2], "172.17.") {
+		return true
+	}
+
+	return false
+}
+
+type AddrList []ma.Multiaddr
+
+func (al AddrList) Len() int {
+	return len(al)
+}
+
+func (al AddrList) Swap(i, j int) {
+	al[i], al[j] = al[j], al[i]
+}
+
+func (al AddrList) Less(i, j int) bool {
+	a := al[i]
+	b := al[j]
+
+	// dial utp and similar 'non-fd-consuming' addresses first
+	if !isFDCostlyTransport(a) {
+		if isFDCostlyTransport(b) {
+			return true
+		}
+
+		// if neither consume fd's, assume equal ordering
+		return false
+	}
+
+	// dial localhost addresses next, they should fail immediately
+	if manet.IsIPLoopback(a) {
+		if !manet.IsIPLoopback(b) {
+			return true
+		}
+
+		// both local? equal
+		return false
+	}
+
+	// docker addresses should be tried last. they very rarely work.
+	if isDefaultDockerRange(a) {
+		return false
+	}
+
+	if isDefaultDockerRange(b) {
+		return true
+	}
+
+	// for the rest, just sort by bytes
+	return bytes.Compare(a.Bytes(), b.Bytes()) > 0
 }
